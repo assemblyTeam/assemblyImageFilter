@@ -24,6 +24,7 @@
   <ItemGroup>
     <None Include="header.inc" />
     <None Include="images.inc" />
+    <None Include="structure.inc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -98,7 +99,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\masm32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>C:\Users\CRZbulabula\Desktop\Irvine\Irvine32.lib;%(AdditionalDependencies)</AdditionalDependencies>

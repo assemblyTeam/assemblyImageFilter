@@ -26,5 +26,8 @@
     <None Include="images.inc">
       <Filter>头文件</Filter>
     </None>
+    <None Include="structure.inc">
+      <Filter>头文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
