@@ -10,6 +10,9 @@
 	exitImage			BYTE "images/exit.png", 0
 	exitHoverImage		BYTE "images/exit_hover.png", 0
 
+	wgyImage			BYTE "images/WGY.png", 0
+	smwgyImage			BYTE "images/smWGY.png", 0
+
 	pngType				BYTE "PNG", 0
 
 	; °´Å¥×ø±ê

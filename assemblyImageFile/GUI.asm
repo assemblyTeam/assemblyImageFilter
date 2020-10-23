@@ -6,6 +6,7 @@ Option Casemap :None
 INCLUDE		header.inc
 INCLUDE		structure.inc
 INCLUDE		images.inc
+INCLUDE		dll.inc
 
 ;==================== 找个词呗哥哥们 =======================
 	printf				PROTO C :ptr sbyte, :VARARG
@@ -152,6 +153,25 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 				INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 				;INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, openLocation.x, edx, 0, 0, openLocation.w, openLocation.h, 2
+
+				; 测试DLL调用
+				; 加载DLL
+				INVOKE	LoadLibrary, OFFSET OpenCVDLL
+				mov		hLIB, eax
+				
+				; 加载函数
+				INVOKE	GetProcAddress, hLIB, OFFSET smFunction
+				mov		smFunc, eax
+				
+				; 调用函数
+				mov		edx, OFFSET smwgyImage
+				push	edx
+				mov		edx, OFFSET wgyImage
+				push	edx
+				call	smFunc
+				pop		edx
+				pop		edx
+
 			.ENDIF
 			.IF cameraStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2

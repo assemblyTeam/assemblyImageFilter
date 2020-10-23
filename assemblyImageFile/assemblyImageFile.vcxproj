@@ -22,6 +22,7 @@
     <MASM Include="GUI.asm" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="dll.inc" />
     <None Include="header.inc" />
     <None Include="images.inc" />
     <None Include="structure.inc" />
@@ -81,6 +82,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
