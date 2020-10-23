@@ -35,12 +35,23 @@ void smImage(char* inputPath, char* outputPath)
 	waitKey(0);
 }
 
+void openCamera()
+{
+	VideoCapture capture(0);
+
+	while (true)
+	{
+		Mat frame;
+		capture >> frame;
+		namedWindow("empty");
+		imshow("…„œÒÕ∑", frame);
+		//imwrite("images/Video.png", frame);
+		waitKey(30);	//—” ±30
+	}
+}
+
 /*int main()
 {
-	//string A, B;
-	char A[] = "images/WGY.png";
-	char B[] = "images/smWGY.png";
 
-	smImage(A, B);
 	return 0;
 }*/

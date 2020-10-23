@@ -154,24 +154,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 				;INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, openLocation.x, edx, 0, 0, openLocation.w, openLocation.h, 2
 
-				; 测试DLL调用
-				; 加载DLL
-				INVOKE	LoadLibrary, OFFSET OpenCVDLL
-				mov		hLIB, eax
-				
-				; 加载函数
-				INVOKE	GetProcAddress, hLIB, OFFSET smFunction
-				mov		smFunc, eax
-				
-				; 调用函数
-				mov		edx, OFFSET smwgyImage
-				push	edx
-				mov		edx, OFFSET wgyImage
-				push	edx
-				call	smFunc
-				pop		edx
-				pop		edx
-
 			.ENDIF
 			.IF cameraStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
@@ -195,6 +177,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE  EndPaint, hWnd, ADDR ps
 
 	.ELSEIF uMsg == WM_MOUSEMOVE
+
 		.IF interfaceID == 0
 
 			; 获取当前鼠标坐标
@@ -216,6 +199,43 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 							mov edx, 1
 							mov openStatus, edx
 							;invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
+						.ENDIF
+					.ENDIF
+				.ENDIF
+			.ENDIF
+
+		.ENDIF
+
+	.ELSEIF uMsg == WM_LBUTTONDOWN
+		
+		.IF interfaceID == 0
+
+			; 获取当前鼠标坐标
+			mov eax, lParam
+			and eax, 0000FFFFh	; x坐标
+			mov ebx, lParam
+			shr ebx, 16			; y坐标
+			
+			; 判断鼠标位于哪个按钮
+			.IF eax > cameraLocation.x
+				mov ecx, cameraLocation.x
+				add ecx, cameraLocation.w
+				.IF eax < ecx
+					.IF ebx > cameraLocation.y
+						mov ecx, cameraLocation.y
+						add ecx, cameraLocation.h
+						.IF ebx < ecx
+							; 测试DLL调用
+							; 加载DLL
+							INVOKE	LoadLibrary, OFFSET OpenCVDLL
+							mov		curDLL, eax
+					
+							; 加载函数
+							INVOKE	GetProcAddress, curDLL, OFFSET cameraFunction
+							mov		curFunc, eax
+				
+							; 调用函数
+							call	curFunc
 						.ENDIF
 					.ENDIF
 				.ENDIF

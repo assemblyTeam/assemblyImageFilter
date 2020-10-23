@@ -1,8 +1,9 @@
 .data
-	OpenCVDLL	BYTE "OpenCVDLL.dll", 0
+	OpenCVDLL		BYTE "OpenCVDLL.dll", 0
 
-	smFunction	BYTE "smImage", 0
+	smFunction		BYTE "smImage", 0
+	cameraFunction	BYTE "openCamera", 0
 
 .data?
-	hLIB		HANDLE ?
-	smFunc		DD ?
+	curDLL		HANDLE ?
+	curFunc		DD ?
