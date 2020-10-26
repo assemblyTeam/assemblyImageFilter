@@ -15,6 +15,7 @@ INCLUDE		dll.inc
 	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	UnicodeStr			PROTO :DWORD, :DWORD
 	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
+	GetFileNameFromDialog	PROTO :DWORD, :DWORD, :DWORD
 	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
 
 ;==================== DATA =======================
@@ -51,6 +52,12 @@ INCLUDE		dll.inc
 	exitHoverBtn		DD ?
 
 	curLocation			location <?>
+
+	ofn		OPENFILENAME <0>
+	szFileName	db 256 dup(0)
+	szFilterString	db 'Text Files(*.txt)',0,'*.txt',0,'All Files(*.*)',0,'*.*',0,0 ; 文件过滤
+	szTitle			db '请选择图片', 0
+	szMessageTitle	db '你选择的文件是', 0
 
 ;=================== CODE =========================
 .code
@@ -241,6 +248,22 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				.ENDIF
 			.ENDIF
 
+			.IF eax > openLocation.x
+				mov ecx, openLocation.x
+				add ecx, openLocation.w
+				.IF eax < ecx
+					.IF ebx > openLocation.y
+						mov ecx, openLocation.y
+						add ecx, openLocation.h
+						.IF ebx < ecx
+							
+							INVOKE GetFileNameFromDialog, addr szFilterString, addr szFileName, addr szTitle
+							invoke MessageBoxA,NULL,addr szFileName,addr szMessageTitle,NULL
+						.ENDIF
+					.ENDIF
+				.ENDIF
+			.ENDIF
+
 		.ENDIF
 
 	.ELSEIF uMsg == WM_TIMER
@@ -297,5 +320,21 @@ UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
 	jnz     @b
 	ret
 UnicodeStr	ENDP
+
+;-----------------------------------------------------
+GetFileNameFromDialog	PROC USES esi filter_string:DWORD, filename:DWORD, dialog_title:DWORD
+; 打开选择文件对话框 https://www.daimajiaoliu.com/daima/37f6f0d89900406/huibianzhongshiyongdakaiduihuakuang
+; https://blog.csdn.net/weixin_33835103/article/details/91893316
+;-----------------------------------------------------
+	mov ofn.lStructSize, sizeof ofn		;结构的大小
+	mov esi, filter_string
+	mov ofn.lpstrFilter, offset szFilterString	;文件过滤器
+	mov ofn.lpstrFile,offset szFileName	;文件名的存放位置
+	mov ofn.nMaxFile, 256	;文件名的最大长度
+	mov ofn.Flags, OFN_FILEMUSTEXIST or OFN_HIDEREADONLY or OFN_LONGNAMES
+	mov ofn.lpstrTitle, offset szTitle	;“打开”对话框的标题
+	invoke GetOpenFileName, addr ofn	;显示打开对话框
+	ret
+GetFileNameFromDialog	ENDP
 
 END START
