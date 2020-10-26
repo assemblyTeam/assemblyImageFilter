@@ -248,7 +248,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	.ELSEIF uMsg == WM_TIMER
 
 		; 根据定时器定时更新界面
-    invoke GetClientRect, hWnd, addr stRect 
+		invoke GetClientRect, hWnd, addr stRect 
 		invoke InvalidateRect, hWnd, addr stRect, 0
 		invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
 
