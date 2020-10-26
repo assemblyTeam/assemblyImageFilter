@@ -106,6 +106,7 @@ WinMain ENDP
 
 WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	LOCAL ps:PAINTSTRUCT
+  local stRect: RECT
 	LOCAL hdc:HDC
 	LOCAL hMemDC:HDC
 	LOCAL bm:BITMAP
@@ -133,6 +134,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE  BeginPaint, hWnd, ADDR ps
 		mov     hdc, eax
 
+		invoke  GetClientRect, hWnd, addr stRect 
 		INVOKE  CreateCompatibleDC, hdc
 		mov     hMemDC, eax
 		invoke  CreateCompatibleBitmap, hdc, 1024, 768		; 创建临时位图pbitmap
@@ -147,12 +149,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	GdipDrawImagePointRectI, graphics, background, 0, 0, 0, 0, 1024, 768, 2
 			
 			.IF openStatus == 0
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				; INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 				INVOKE	GdipDrawImagePointRectI, graphics, openBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				; INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, 200, 200, 0, 0, openLocation.w, openLocation.h, 2
 				INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-				;INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, openLocation.x, edx, 0, 0, openLocation.w, openLocation.h, 2
+				; INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, openLocation.x, edx, 0, 0, openLocation.w, openLocation.h, 2
 
 			.ENDIF
 			.IF cameraStatus == 0
@@ -198,7 +200,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 						.IF ebx < ecx
 							mov edx, 1
 							mov openStatus, edx
-							;invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
+							invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
 						.ENDIF
 					.ENDIF
 				.ENDIF
@@ -246,6 +248,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	.ELSEIF uMsg == WM_TIMER
 
 		; 根据定时器定时更新界面
+    invoke GetClientRect, hWnd, addr stRect 
+		invoke InvalidateRect, hWnd, addr stRect, 0
 		invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
 
 	.ELSEIF uMsg == WM_DESTROY
