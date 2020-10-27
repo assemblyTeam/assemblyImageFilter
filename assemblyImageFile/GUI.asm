@@ -8,32 +8,33 @@ INCLUDE		structure.inc
 INCLUDE		images.inc
 INCLUDE		dll.inc
 
-;==================== ÕÒ¸ö´ÊßÂ¸ç¸çÃÇ =======================
+;==================== æ‰¾ä¸ªè¯å‘—å“¥å“¥ä»¬ =======================
 	printf				PROTO C :ptr sbyte, :VARARG
 
 	WinMain				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	;UnicodeStr			PROTO :DWORD, :DWORD
 	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
+	ChangeBtnStatus	PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
 	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
 
 ;==================== DATA =======================
-;Íâ²¿¿ÉÒıÓÃµÄ±äÁ¿
+;å¤–éƒ¨å¯å¼•ç”¨çš„å˜é‡
 PUBLIC StartupInfo
 PUBLIC UnicodeFileName
 PUBLIC token
 
 .data
 
-	interfaceID		DWORD 0	; µ±Ç°Ëù´¦µÄ½çÃæ£¬0ÊÇ³õÊ¼½çÃæ£¬1ÊÇ´ò¿ªÍ¼Æ¬£¬2ÊÇÉãÏñ»ú
-	openStatus		DWORD 0	; ¿ØÖÆ°´Å¥×´Ì¬
+	interfaceID		DWORD 0	; å½“å‰æ‰€å¤„çš„ç•Œé¢ï¼Œ0æ˜¯åˆå§‹ç•Œé¢ï¼Œ1æ˜¯æ‰“å¼€å›¾ç‰‡ï¼Œ2æ˜¯æ‘„åƒæœº
+	openStatus		DWORD 0	; æ§åˆ¶æŒ‰é’®çŠ¶æ€
 	cameraStatus	DWORD 0
 	exitStatus		DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
 
-	;³õÊ¼»¯gdi+¶ÔÏó
+	;åˆå§‹åŒ–gdi+å¯¹è±¡
 	gdiplusToken	DD ?
 	gdiplusSInput	GdiplusStartupInput <1, NULL, FALSE, FALSE>
 
@@ -50,10 +51,13 @@ PUBLIC token
 	emptyBtn			DD ?
 	openBtn				DD ?
 	openHoverBtn		DD ?
+	openClickBtn	DD ?
 	cameraBtn			DD ?
 	cameraHoverBtn		DD ?
+	cameraClickBtn	DD ?
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
+	exitClickBtn	DD ?
 
 	curLocation			location <?>
 
@@ -111,6 +115,7 @@ WinMain ENDP
 
 WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	LOCAL ps:PAINTSTRUCT
+  local stRect: RECT
 	LOCAL hdc:HDC
 	LOCAL hMemDC:HDC
 	LOCAL bm:BITMAP
@@ -120,62 +125,77 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 	.IF uMsg == WM_CREATE
 
-		; ´ò¿ª¼ÆÊ±Æ÷
+		; æ‰“å¼€è®¡æ—¶å™¨
 		INVOKE	SetTimer, hWnd, 1, 10, NULL
 
-		; ¼ÓÔÚÎÄ¼şÖĞµÄÍ¼Ïñ
+		; åŠ åœ¨æ–‡ä»¶ä¸­çš„å›¾åƒ
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
 		INVOKE	LoadImageFromFile, OFFSET btnImage, ADDR emptyBtn
 		INVOKE	LoadImageFromFile, OFFSET openImage, ADDR openBtn
 		INVOKE	LoadImageFromFile, OFFSET openHoverImage, ADDR openHoverBtn
+		;INVOKE	LoadImageFromFile, OFFSET openClickImage, ADDR openClickBtn
 		INVOKE	LoadImageFromFile, OFFSET cameraImage, ADDR cameraBtn
 		INVOKE	LoadImageFromFile, OFFSET cameraHoverImage, ADDR cameraHoverBtn
+		; INVOKE	LoadImageFromFile, OFFSET cameraClickImage, ADDR cameraClickBtn
 		INVOKE	LoadImageFromFile, OFFSET exitImage, ADDR exitBtn
 		INVOKE	LoadImageFromFile, OFFSET exitHoverImage, ADDR exitHoverBtn
+		; INVOKE	LoadImageFromFile, OFFSET exitClickImage, ADDR exitClickBtn
 
 	.ELSEIF uMsg == WM_PAINT
 
 		INVOKE  BeginPaint, hWnd, ADDR ps
 		mov     hdc, eax
 
+		invoke  GetClientRect, hWnd, addr stRect 
 		INVOKE  CreateCompatibleDC, hdc
 		mov     hMemDC, eax
-		invoke  CreateCompatibleBitmap, hdc, 1024, 768		; ´´½¨ÁÙÊ±Î»Í¼pbitmap
+		invoke  CreateCompatibleBitmap, hdc, 1024, 768		; åˆ›å»ºä¸´æ—¶ä½å›¾pbitmap
 		mov		pbitmap, eax
 		INVOKE  SelectObject, hMemDC, pbitmap
-		INVOKE  GdipCreateFromHDC, hMemDC, ADDR graphics	; ´´½¨»æÍ¼¶ÔÏógraphics
+		INVOKE  GdipCreateFromHDC, hMemDC, ADDR graphics	; åˆ›å»ºç»˜å›¾å¯¹è±¡graphics
 
 
 		.IF interfaceID == 0
 
-			; »æÖÆ³õÊ¼½çÃæ
+			; ç»˜åˆ¶åˆå§‹ç•Œé¢
 			INVOKE	GdipDrawImagePointRectI, graphics, background, 0, 0, 0, 0, 1024, 768, 2
 			
 			.IF openStatus == 0
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				; INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 				INVOKE	GdipDrawImagePointRectI, graphics, openBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-				INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-				;INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, openLocation.x, edx, 0, 0, openLocation.w, openLocation.h, 2
-
+			.ELSE 
+				.IF openStatus == 1
+					INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				.ELSE
+					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				.ENDIF
 			.ENDIF
+
 			.IF cameraStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, cameraHoverBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+				.IF cameraStatus == 1
+					INVOKE	GdipDrawImagePointRectI, graphics, cameraHoverBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+				.ELSE
+					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+				.ENDIF
 			.ENDIF
+
 			.IF exitStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, exitBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+				.IF exitStatus == 1
+					INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+				.ELSE
+					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+				.ENDIF
 			.ENDIF
 
 		.ENDIF
 
-		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; »æÍ¼
+		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; ç»˜å›¾
 			
-		; ÊÍ·ÅÄÚ´æ
+		; é‡Šæ”¾å†…å­˜
 		INVOKE	GdipDeleteGraphics, graphics
 		INVOKE	DeleteObject, pbitmap
 		INVOKE  DeleteDC, hMemDC
@@ -185,43 +205,34 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.IF interfaceID == 0
 
-			; »ñÈ¡µ±Ç°Êó±ê×ø±ê
+			; è·å–å½“å‰é¼ æ ‡åæ ‡
 			mov eax, lParam
-			and eax, 0000FFFFh	; x×ø±ê
+			and eax, 0000FFFFh	; xåæ ‡
 			mov ebx, lParam
-			shr ebx, 16			; y×ø±ê
+			shr ebx, 16			; yåæ ‡
 			
-			; ÅĞ¶Ï³õÊ¼½çÃæµÄ°´Å¥×´Ì¬
-			mov openStatus, 0
-			.IF eax > openLocation.x
-				mov ecx, openLocation.x
-				add ecx, openLocation.w
-				.IF eax < ecx
-					.IF ebx > openLocation.y
-						mov ecx, openLocation.y
-						add ecx, openLocation.h
-						.IF ebx < ecx
-							mov edx, 1
-							mov openStatus, edx
-							;invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
-						.ENDIF
-					.ENDIF
-				.ENDIF
-			.ENDIF
-
+			; æ”¹å˜ä¸‰ä¸ªæŒ‰é’®çš„çŠ¶æ€
+			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 1
+			
 		.ENDIF
 
 	.ELSEIF uMsg == WM_LBUTTONDOWN
 		
 		.IF interfaceID == 0
 
-			; »ñÈ¡µ±Ç°Êó±ê×ø±ê
+			; è·å–å½“å‰é¼ æ ‡åæ ‡
 			mov eax, lParam
-			and eax, 0000FFFFh	; x×ø±ê
+			and eax, 0000FFFFh	; xåæ ‡
 			mov ebx, lParam
-			shr ebx, 16			; y×ø±ê
+			shr ebx, 16			; yåæ ‡
 			
-			; ÅĞ¶ÏÊó±êÎ»ÓÚÄÄ¸ö°´Å¥
+			; æ”¹å˜æŒ‰é’®çŠ¶æ€
+			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 2
+			; åˆ¤æ–­é¼ æ ‡ä½äºå“ªä¸ªæŒ‰é’®
 			.IF eax > cameraLocation.x
 				mov ecx, cameraLocation.x
 				add ecx, cameraLocation.w
@@ -230,16 +241,16 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 						mov ecx, cameraLocation.y
 						add ecx, cameraLocation.h
 						.IF ebx < ecx
-							; ²âÊÔDLLµ÷ÓÃ
-							; ¼ÓÔØDLL
+							; æµ‹è¯•DLLè°ƒç”¨
+							; åŠ è½½DLL
 							INVOKE	LoadLibrary, OFFSET OpenCVDLL
 							mov		curDLL, eax
 					
-							; ¼ÓÔØº¯Êı
+							; åŠ è½½å‡½æ•°
 							INVOKE	GetProcAddress, curDLL, OFFSET cameraFunction
 							mov		curFunc, eax
 				
-							; µ÷ÓÃº¯Êı
+							; è°ƒç”¨å‡½æ•°
 							call	curFunc
 						.ENDIF
 					.ENDIF
@@ -247,14 +258,17 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ENDIF
 
 		.ENDIF
-
+	; æ ¹æ®å®šæ—¶å™¨å®šæ—¶æ›´æ–°ç•Œé¢
 	.ELSEIF uMsg == WM_TIMER
-
-		; ¸ù¾İ¶¨Ê±Æ÷¶¨Ê±¸üĞÂ½çÃæ
+		; è·å¾—å½“å‰çª—å£çš„rectangle
+		invoke GetClientRect, hWnd, addr stRect
+		; æŒ‡å®šé‡ç»˜åŒºåŸŸ
+		invoke InvalidateRect, hWnd, addr stRect, 0
+		; å‘é€ç»˜åˆ¶ä¿¡æ¯
 		invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
 
 	.ELSEIF uMsg == WM_DESTROY
-	
+
 		INVOKE  PostQuitMessage, NULL
 		
 	.ELSE
@@ -267,5 +281,33 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	xor  eax, eax
 	ret
 WndProc	ENDP
+
+
+
+;-----------------------------------------------------
+ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
+; æ”¹å˜æŒ‰é’®çŠ¶æ€
+;-----------------------------------------------------
+	mov esi, btn_status_addr
+	mov DWORD PTR [esi], 0
+	mov eax, x
+	mov ebx, y
+	.IF eax > btn_location.x
+		mov ecx, btn_location.x
+		add ecx, btn_location.w
+		.IF eax < ecx
+			.IF ebx > btn_location.y
+				mov ecx, btn_location.y
+				add ecx, btn_location.h
+				.IF ebx < ecx
+					mov esi, btn_status_addr
+					mov edx, new_status
+					mov [esi], edx
+				.ENDIF
+			.ENDIF
+		.ENDIF
+	.ENDIF
+	ret
+ChangeBtnStatus	ENDP
 
 END START
