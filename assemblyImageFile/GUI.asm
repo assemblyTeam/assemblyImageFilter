@@ -15,7 +15,7 @@ INCLUDE		dll.inc
 	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	UnicodeStr			PROTO :DWORD, :DWORD
 	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
-	GetFileNameFromDialog	PROTO :DWORD, :DWORD, :DWORD
+	GetFileNameFromDialog	PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
 
 ;==================== DATA =======================
@@ -55,8 +55,9 @@ INCLUDE		dll.inc
 
 	ofn		OPENFILENAME <0>
 	szFileName	db 256 dup(0)
-	szFilterString	db 'Text Files(*.txt)',0,'*.txt',0,'All Files(*.*)',0,'*.*',0,0 ; 文件过滤
-	szTitle			db '请选择图片', 0
+	szFilterString	db '图片文件',0,'*.png;*.jpg',0,0	; 文件过滤
+	szInitialDir	db 'D://', 0 ; 初始目录
+	szTitle			db '请选择图片', 0 ; 对话框标题
 	szMessageTitle	db '你选择的文件是', 0
 
 ;=================== CODE =========================
@@ -257,7 +258,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 						add ecx, openLocation.h
 						.IF ebx < ecx
 							
-							INVOKE GetFileNameFromDialog, addr szFilterString, addr szFileName, addr szTitle
+							INVOKE GetFileNameFromDialog, addr szFilterString, addr szInitialDir, addr szFileName, addr szTitle
 							invoke MessageBoxA,NULL,addr szFileName,addr szMessageTitle,NULL
 						.ENDIF
 					.ENDIF
@@ -322,17 +323,23 @@ UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
 UnicodeStr	ENDP
 
 ;-----------------------------------------------------
-GetFileNameFromDialog	PROC USES esi filter_string:DWORD, filename:DWORD, dialog_title:DWORD
-; 打开选择文件对话框 https://www.daimajiaoliu.com/daima/37f6f0d89900406/huibianzhongshiyongdakaiduihuakuang
+GetFileNameFromDialog	PROC USES esi filter_string:DWORD, initial_dir:DWORD, filename:DWORD, dialog_title:DWORD
+; 打开选择文件对话框 
+; https://www.daimajiaoliu.com/daima/37f6f0d89900406/huibianzhongshiyongdakaiduihuakuang
 ; https://blog.csdn.net/weixin_33835103/article/details/91893316
 ;-----------------------------------------------------
+	INVOKE	RtlZeroMemory,addr ofn, sizeof ofn
 	mov ofn.lStructSize, sizeof ofn		;结构的大小
 	mov esi, filter_string
-	mov ofn.lpstrFilter, offset szFilterString	;文件过滤器
-	mov ofn.lpstrFile,offset szFileName	;文件名的存放位置
+	mov ofn.lpstrFilter, esi	;文件过滤器
+	mov esi, initial_dir
+	mov ofn.lpstrInitialDir, esi ; 初始目录
+	mov esi, filename
+	mov ofn.lpstrFile, esi	;文件名的存放位置
 	mov ofn.nMaxFile, 256	;文件名的最大长度
 	mov ofn.Flags, OFN_FILEMUSTEXIST or OFN_HIDEREADONLY or OFN_LONGNAMES
-	mov ofn.lpstrTitle, offset szTitle	;“打开”对话框的标题
+	mov esi, dialog_title
+	mov ofn.lpstrTitle, esi	;“打开”对话框的标题
 	invoke GetOpenFileName, addr ofn	;显示打开对话框
 	ret
 GetFileNameFromDialog	ENDP
