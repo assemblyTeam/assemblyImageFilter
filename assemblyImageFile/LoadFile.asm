@@ -6,12 +6,13 @@ INCLUDE		header.inc
 
 .data
 ;声明为外部变量
-EXTERN StartupInfo: GdiplusStartupInput
-EXTERN UnicodeFileName: DWORD
-EXTERN token: DWORD
+EXTERN		StartupInfo: GdiplusStartupInput
+EXTERN		UnicodeFileName: DWORD
+EXTERN		token: DWORD
 
 ;外部可调用的函数
-PUBLIC LoadImageFromFile
+PUBLIC		LoadImageFromFile
+
 .code
 ;-----------------------------------------------------
 UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
