@@ -13,10 +13,8 @@ INCLUDE		dll.inc
 
 	WinMain				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	;UnicodeStr			PROTO :DWORD, :DWORD
 	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
-	ChangeBtnStatus	PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
-	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
+	ChangeBtnStatus		PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
 
 ;==================== DATA =======================
 ;外部可引用的变量
@@ -51,13 +49,13 @@ PUBLIC token
 	emptyBtn			DD ?
 	openBtn				DD ?
 	openHoverBtn		DD ?
-	openClickBtn	DD ?
+	openClickBtn		DD ?
 	cameraBtn			DD ?
 	cameraHoverBtn		DD ?
-	cameraClickBtn	DD ?
+	cameraClickBtn		DD ?
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
-	exitClickBtn	DD ?
+	exitClickBtn		DD ?
 
 	curLocation			location <?>
 
@@ -127,6 +125,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		; 打开计时器
 		INVOKE	SetTimer, hWnd, 1, 10, NULL
+		
+		; 加载DLL
+		INVOKE	LoadLibrary, OFFSET OpenCVDLL
+		mov		curDLL, eax
 
 		; 加在文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
@@ -136,10 +138,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		;INVOKE	LoadImageFromFile, OFFSET openClickImage, ADDR openClickBtn
 		INVOKE	LoadImageFromFile, OFFSET cameraImage, ADDR cameraBtn
 		INVOKE	LoadImageFromFile, OFFSET cameraHoverImage, ADDR cameraHoverBtn
-		; INVOKE	LoadImageFromFile, OFFSET cameraClickImage, ADDR cameraClickBtn
+		;INVOKE	LoadImageFromFile, OFFSET cameraClickImage, ADDR cameraClickBtn
 		INVOKE	LoadImageFromFile, OFFSET exitImage, ADDR exitBtn
 		INVOKE	LoadImageFromFile, OFFSET exitHoverImage, ADDR exitHoverBtn
-		; INVOKE	LoadImageFromFile, OFFSET exitClickImage, ADDR exitClickBtn
+		;INVOKE	LoadImageFromFile, OFFSET exitClickImage, ADDR exitClickBtn
 
 	.ELSEIF uMsg == WM_PAINT
 
@@ -154,41 +156,33 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE  SelectObject, hMemDC, pbitmap
 		INVOKE  GdipCreateFromHDC, hMemDC, ADDR graphics	; 创建绘图对象graphics
 
-
 		.IF interfaceID == 0
 
 			; 绘制初始界面
 			INVOKE	GdipDrawImagePointRectI, graphics, background, 0, 0, 0, 0, 1024, 768, 2
 			
 			.IF openStatus == 0
-				; INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 				INVOKE	GdipDrawImagePointRectI, graphics, openBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-			.ELSE 
-				.IF openStatus == 1
-					INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-				.ELSE
-					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-				.ENDIF
+			.ELSEIF openStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 			.ENDIF
 
 			.IF cameraStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+			.ELSEIF cameraStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, cameraHoverBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
 			.ELSE
-				.IF cameraStatus == 1
-					INVOKE	GdipDrawImagePointRectI, graphics, cameraHoverBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
-				.ELSE
-					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
-				.ENDIF
+				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
 			.ENDIF
 
 			.IF exitStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, exitBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+			.ELSEIF exitStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ELSE
-				.IF exitStatus == 1
-					INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
-				.ELSE
-					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
-				.ENDIF
+				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ENDIF
 
 		.ENDIF
@@ -211,7 +205,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov ebx, lParam
 			shr ebx, 16			; y坐标
 			
-			; 改变三个按钮的状态
+			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 1
@@ -232,29 +226,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 2
-			; 判断鼠标位于哪个按钮
-			.IF eax > cameraLocation.x
-				mov ecx, cameraLocation.x
-				add ecx, cameraLocation.w
-				.IF eax < ecx
-					.IF ebx > cameraLocation.y
-						mov ecx, cameraLocation.y
-						add ecx, cameraLocation.h
-						.IF ebx < ecx
-							; 测试DLL调用
-							; 加载DLL
-							INVOKE	LoadLibrary, OFFSET OpenCVDLL
-							mov		curDLL, eax
-					
-							; 加载函数
-							INVOKE	GetProcAddress, curDLL, OFFSET cameraFunction
-							mov		curFunc, eax
-				
-							; 调用函数
-							call	curFunc
-						.ENDIF
-					.ENDIF
-				.ENDIF
+			
+			; 鼠标位于Camera
+			mov eax, cameraStatus;
+			.IF eax == 2					
+				INVOKE	GetProcAddress, curDLL, OFFSET cameraFunction
+				mov		curFunc, eax	; 加载摄像头函数
+				call	curFunc			; 调用摄像头函数
 			.ENDIF
 
 		.ENDIF
@@ -282,10 +260,9 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	ret
 WndProc	ENDP
 
-
-
 ;-----------------------------------------------------
-ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
+ChangeBtnStatus	PROC USES eax ebx ecx edx esi 
+				x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
 ; 改变按钮状态
 ;-----------------------------------------------------
 	mov esi, btn_status_addr
