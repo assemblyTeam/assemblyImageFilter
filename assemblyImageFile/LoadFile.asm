@@ -15,7 +15,7 @@ PUBLIC		LoadImageFromFile
 
 .code
 ;-----------------------------------------------------
-UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
+UnicodeStr	PROC USES eax ebx ecx edx esi Source:DWORD, Dest:DWORD
 ; 用于将图片名称转换成Unicode字符串
 ;-----------------------------------------------------
 	mov     ebx, 1
@@ -33,7 +33,7 @@ UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
 UnicodeStr	ENDP
 
 ;-----------------------------------------------------
-LoadImageFromFile	PROC FileName:PTR BYTE, Bitmap:DWORD
+LoadImageFromFile	PROC USES eax FileName:PTR BYTE, Bitmap:DWORD
 ; 从文件中读取图片转换成Bitmap并存入Bitmap
 ;-----------------------------------------------------
 	mov     eax, OFFSET StartupInfo
