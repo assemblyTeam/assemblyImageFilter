@@ -8,28 +8,33 @@ INCLUDE		structure.inc
 INCLUDE		images.inc
 INCLUDE		dll.inc
 
-;==================== ÕÒ¸ö´ÊßÂ¸ç¸çÃÇ =======================
+;==================== æ‰¾ä¸ªè¯å‘—å“¥å“¥ä»¬ =======================
 	printf				PROTO C :ptr sbyte, :VARARG
 
 	WinMain				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	UnicodeStr			PROTO :DWORD, :DWORD
+	;UnicodeStr			PROTO :DWORD, :DWORD
 	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
 	ChangeBtnStatus	PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
 	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
 
 ;==================== DATA =======================
+;å¤–éƒ¨å¯å¼•ç”¨çš„å˜é‡
+PUBLIC StartupInfo
+PUBLIC UnicodeFileName
+PUBLIC token
+
 .data
 
-	interfaceID		DWORD 0	; µ±Ç°Ëù´¦µÄ½çÃæ£¬0ÊÇ³õÊ¼½çÃæ£¬1ÊÇ´ò¿ªÍ¼Æ¬£¬2ÊÇÉãÏñ»ú
-	openStatus		DWORD 0	; ¿ØÖÆ°´Å¥×´Ì¬
+	interfaceID		DWORD 0	; å½“å‰æ‰€å¤„çš„ç•Œé¢ï¼Œ0æ˜¯åˆå§‹ç•Œé¢ï¼Œ1æ˜¯æ‰“å¼€å›¾ç‰‡ï¼Œ2æ˜¯æ‘„åƒæœº
+	openStatus		DWORD 0	; æ§åˆ¶æŒ‰é’®çŠ¶æ€
 	cameraStatus	DWORD 0
 	exitStatus		DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
 
-	;³õÊ¼»¯gdi+¶ÔÏó
+	;åˆå§‹åŒ–gdi+å¯¹è±¡
 	gdiplusToken	DD ?
 	gdiplusSInput	GdiplusStartupInput <1, NULL, FALSE, FALSE>
 
@@ -120,10 +125,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 	.IF uMsg == WM_CREATE
 
-		; ´ò¿ª¼ÆÊ±Æ÷
+		; æ‰“å¼€è®¡æ—¶å™¨
 		INVOKE	SetTimer, hWnd, 1, 10, NULL
 
-		; ¼ÓÔÚÎÄ¼şÖĞµÄÍ¼Ïñ
+		; åŠ åœ¨æ–‡ä»¶ä¸­çš„å›¾åƒ
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
 		INVOKE	LoadImageFromFile, OFFSET btnImage, ADDR emptyBtn
 		INVOKE	LoadImageFromFile, OFFSET openImage, ADDR openBtn
@@ -144,15 +149,15 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		invoke  GetClientRect, hWnd, addr stRect 
 		INVOKE  CreateCompatibleDC, hdc
 		mov     hMemDC, eax
-		invoke  CreateCompatibleBitmap, hdc, 1024, 768		; ´´½¨ÁÙÊ±Î»Í¼pbitmap
+		invoke  CreateCompatibleBitmap, hdc, 1024, 768		; åˆ›å»ºä¸´æ—¶ä½å›¾pbitmap
 		mov		pbitmap, eax
 		INVOKE  SelectObject, hMemDC, pbitmap
-		INVOKE  GdipCreateFromHDC, hMemDC, ADDR graphics	; ´´½¨»æÍ¼¶ÔÏógraphics
+		INVOKE  GdipCreateFromHDC, hMemDC, ADDR graphics	; åˆ›å»ºç»˜å›¾å¯¹è±¡graphics
 
 
 		.IF interfaceID == 0
 
-			; »æÖÆ³õÊ¼½çÃæ
+			; ç»˜åˆ¶åˆå§‹ç•Œé¢
 			INVOKE	GdipDrawImagePointRectI, graphics, background, 0, 0, 0, 0, 1024, 768, 2
 			
 			.IF openStatus == 0
@@ -188,9 +193,9 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.ENDIF
 
-		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; »æÍ¼
+		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; ç»˜å›¾
 			
-		; ÊÍ·ÅÄÚ´æ
+		; é‡Šæ”¾å†…å­˜
 		INVOKE	GdipDeleteGraphics, graphics
 		INVOKE	DeleteObject, pbitmap
 		INVOKE  DeleteDC, hMemDC
@@ -200,13 +205,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.IF interfaceID == 0
 
-			; »ñÈ¡µ±Ç°Êó±ê×ø±ê
+			; è·å–å½“å‰é¼ æ ‡åæ ‡
 			mov eax, lParam
-			and eax, 0000FFFFh	; x×ø±ê
+			and eax, 0000FFFFh	; xåæ ‡
 			mov ebx, lParam
-			shr ebx, 16			; y×ø±ê
+			shr ebx, 16			; yåæ ‡
 			
-			; ¸Ä±äÈı¸ö°´Å¥µÄ×´Ì¬
+			; æ”¹å˜ä¸‰ä¸ªæŒ‰é’®çš„çŠ¶æ€
 			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 1
@@ -217,17 +222,17 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		
 		.IF interfaceID == 0
 
-			; »ñÈ¡µ±Ç°Êó±ê×ø±ê
+			; è·å–å½“å‰é¼ æ ‡åæ ‡
 			mov eax, lParam
-			and eax, 0000FFFFh	; x×ø±ê
+			and eax, 0000FFFFh	; xåæ ‡
 			mov ebx, lParam
-			shr ebx, 16			; y×ø±ê
+			shr ebx, 16			; yåæ ‡
 			
-			; ¸Ä±ä°´Å¥×´Ì¬
+			; æ”¹å˜æŒ‰é’®çŠ¶æ€
 			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 2
-			; ÅĞ¶ÏÊó±êÎ»ÓÚÄÄ¸ö°´Å¥
+			; åˆ¤æ–­é¼ æ ‡ä½äºå“ªä¸ªæŒ‰é’®
 			.IF eax > cameraLocation.x
 				mov ecx, cameraLocation.x
 				add ecx, cameraLocation.w
@@ -236,16 +241,16 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 						mov ecx, cameraLocation.y
 						add ecx, cameraLocation.h
 						.IF ebx < ecx
-							; ²âÊÔDLLµ÷ÓÃ
-							; ¼ÓÔØDLL
+							; æµ‹è¯•DLLè°ƒç”¨
+							; åŠ è½½DLL
 							INVOKE	LoadLibrary, OFFSET OpenCVDLL
 							mov		curDLL, eax
 					
-							; ¼ÓÔØº¯Êı
+							; åŠ è½½å‡½æ•°
 							INVOKE	GetProcAddress, curDLL, OFFSET cameraFunction
 							mov		curFunc, eax
 				
-							; µ÷ÓÃº¯Êı
+							; è°ƒç”¨å‡½æ•°
 							call	curFunc
 						.ENDIF
 					.ENDIF
@@ -253,13 +258,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ENDIF
 
 		.ENDIF
-	; ¸ù¾İ¶¨Ê±Æ÷¶¨Ê±¸üĞÂ½çÃæ
+	; æ ¹æ®å®šæ—¶å™¨å®šæ—¶æ›´æ–°ç•Œé¢
 	.ELSEIF uMsg == WM_TIMER
-		; »ñµÃµ±Ç°´°¿ÚµÄrectangle
+		; è·å¾—å½“å‰çª—å£çš„rectangle
 		invoke GetClientRect, hWnd, addr stRect
-		; Ö¸¶¨ÖØ»æÇøÓò
+		; æŒ‡å®šé‡ç»˜åŒºåŸŸ
 		invoke InvalidateRect, hWnd, addr stRect, 0
-		; ·¢ËÍ»æÖÆĞÅÏ¢
+		; å‘é€ç»˜åˆ¶ä¿¡æ¯
 		invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
 
 	.ELSEIF uMsg == WM_DESTROY
@@ -277,44 +282,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	ret
 WndProc	ENDP
 
-;-----------------------------------------------------
-LoadImageFromFile	PROC FileName:PTR BYTE, Bitmap:DWORD
-; ´ÓÎÄ¼şÖĞ¶ÁÈ¡Í¼Æ¬×ª»»³ÉBitmap²¢´æÈëBitmap
-;-----------------------------------------------------
-	mov     eax, OFFSET StartupInfo
-	mov     GdiplusStartupInput.GdiplusVersion[eax], 1
 
-	INVOKE  GdiplusStartup, ADDR token, ADDR StartupInfo, 0
-	INVOKE  UnicodeStr, FileName, ADDR UnicodeFileName
-								
-	INVOKE  GdipCreateBitmapFromFile, ADDR UnicodeFileName, Bitmap
-
-	;INVOKE  GdipCreateBitmapFromFile, ADDR UnicodeFileName, ADDR BmpImage
-	;INVOKE  GdipCreateHBITMAPFromBitmap, BmpImage, Bitmap, 0
-	ret
-LoadImageFromFile	ENDP
-
-;-----------------------------------------------------
-UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
-; ÓÃÓÚ½«Í¼Æ¬Ãû³Æ×ª»»³ÉUnicode×Ö·û´®
-;-----------------------------------------------------
-	mov     ebx, 1
-	mov     esi, Source
-	mov     edx, Dest
-	xor     eax, eax
-	sub     eax, ebx
-@@:
-	add     eax, ebx
-	movzx   ecx, BYTE PTR [esi + eax]
-	mov     WORD PTR [edx + eax * 2], cx
-	test    ecx, ecx
-	jnz     @b
-	ret
-UnicodeStr	ENDP
 
 ;-----------------------------------------------------
 ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
-; ¸Ä±ä°´Å¥×´Ì¬
+; æ”¹å˜æŒ‰é’®çŠ¶æ€
 ;-----------------------------------------------------
 	mov esi, btn_status_addr
 	mov DWORD PTR [esi], 0
