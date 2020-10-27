@@ -18,6 +18,9 @@
     <MASM Include="GUI.asm">
       <Filter>源文件</Filter>
     </MASM>
+    <MASM Include="LoadFile.asm">
+      <Filter>源文件</Filter>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <None Include="header.inc">

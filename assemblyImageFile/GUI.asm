@@ -13,11 +13,16 @@ INCLUDE		dll.inc
 
 	WinMain				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	UnicodeStr			PROTO :DWORD, :DWORD
+	;UnicodeStr			PROTO :DWORD, :DWORD
 	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
 	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
 
 ;==================== DATA =======================
+;外部可引用的变量
+PUBLIC StartupInfo
+PUBLIC UnicodeFileName
+PUBLIC token
+
 .data
 
 	interfaceID		DWORD 0	; 当前所处的界面，0是初始界面，1是打开图片，2是摄像机
@@ -262,40 +267,5 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	xor  eax, eax
 	ret
 WndProc	ENDP
-
-;-----------------------------------------------------
-LoadImageFromFile	PROC FileName:PTR BYTE, Bitmap:DWORD
-; 从文件中读取图片转换成Bitmap并存入Bitmap
-;-----------------------------------------------------
-	mov     eax, OFFSET StartupInfo
-	mov     GdiplusStartupInput.GdiplusVersion[eax], 1
-
-	INVOKE  GdiplusStartup, ADDR token, ADDR StartupInfo, 0
-	INVOKE  UnicodeStr, FileName, ADDR UnicodeFileName
-								
-	INVOKE  GdipCreateBitmapFromFile, ADDR UnicodeFileName, Bitmap
-
-	;INVOKE  GdipCreateBitmapFromFile, ADDR UnicodeFileName, ADDR BmpImage
-	;INVOKE  GdipCreateHBITMAPFromBitmap, BmpImage, Bitmap, 0
-	ret
-LoadImageFromFile	ENDP
-
-;-----------------------------------------------------
-UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
-; 用于将图片名称转换成Unicode字符串
-;-----------------------------------------------------
-	mov     ebx, 1
-	mov     esi, Source
-	mov     edx, Dest
-	xor     eax, eax
-	sub     eax, ebx
-@@:
-	add     eax, ebx
-	movzx   ecx, BYTE PTR [esi + eax]
-	mov     WORD PTR [edx + eax * 2], cx
-	test    ecx, ecx
-	jnz     @b
-	ret
-UnicodeStr	ENDP
 
 END START
