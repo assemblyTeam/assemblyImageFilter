@@ -9,14 +9,13 @@ INCLUDE		images.inc
 INCLUDE		dll.inc
 
 ;==================== 找个词呗哥哥们 =======================
-	printf				PROTO C :ptr sbyte, :VARARG
+	printf					PROTO C :ptr sbyte, :VARARG
 
-	WinMain				PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	UnicodeStr			PROTO :DWORD, :DWORD
-	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
+	WinMain					PROTO :DWORD, :DWORD, :DWORD, :DWORD
+	WndProc					PROTO :DWORD, :DWORD, :DWORD, :DWORD
+	UnicodeStr				PROTO :DWORD, :DWORD
+	LoadImageFromFile		PROTO :PTR BYTE, :DWORD
 	GetFileNameFromDialog	PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
 
 ;==================== DATA =======================
 .data
@@ -43,6 +42,7 @@ INCLUDE		dll.inc
 	token               DD ?
 
 	background			DD ?
+	szImage				DD ?
 	emptyBtn			DD ?
 	openBtn				DD ?
 	openHoverBtn		DD ?
@@ -53,12 +53,12 @@ INCLUDE		dll.inc
 
 	curLocation			location <?>
 
-	ofn		OPENFILENAME <0>
-	szFileName	db 256 dup(0)
-	szFilterString	db '图片文件',0,'*.png;*.jpg',0,0	; 文件过滤
-	szInitialDir	db 'D://', 0 ; 初始目录
-	szTitle			db '请选择图片', 0 ; 对话框标题
-	szMessageTitle	db '你选择的文件是', 0
+	ofn					OPENFILENAME <0>
+	szFileName			DB 256 DUP(0)
+	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
+	szInitialDir		DB './', 0 ; 初始目录
+	szTitle				DB '请选择图片', 0 ; 对话框标题
+	szMessageTitle		DB '你选择的文件是', 0
 
 ;=================== CODE =========================
 .code
@@ -93,7 +93,7 @@ WinMain PROC hInst:DWORD, hPrevInst:DWORD, CmdLine:DWORD, CmdShow:DWORD
 
 	INVOKE RegisterClassEx, ADDR wc
 	INVOKE CreateWindowEx, NULL, ADDR szClassName, ADDR WindowName, 
-		WS_OVERLAPPEDWINDOW, 460, 20, 1024, 768, NULL, NULL, hInst, NULL
+		   WS_OVERLAPPEDWINDOW, 460, 20, 1024, 768, NULL, NULL, hInst, NULL
 	mov hWnd, eax
 	INVOKE ShowWindow, hWnd, SW_SHOWNORMAL
 	INVOKE UpdateWindow, hWnd
@@ -173,6 +173,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ENDIF
+
+		.ELSEIF interfaceID == 1
+
+			INVOKE	LoadImageFromFile, ADDR szFileName, ADDR szImage
+			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
 
 		.ENDIF
 
@@ -257,9 +262,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 						mov ecx, openLocation.y
 						add ecx, openLocation.h
 						.IF ebx < ecx
-							
-							INVOKE GetFileNameFromDialog, addr szFilterString, addr szInitialDir, addr szFileName, addr szTitle
-							invoke MessageBoxA,NULL,addr szFileName,addr szMessageTitle,NULL
+							INVOKE GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
+							mov edx, 1
+							mov interfaceID, edx
+							; INVOKE MessageBoxA, NULL, ADDR szFileName, ADDR szMessageTitle, NULL
 						.ENDIF
 					.ENDIF
 				.ENDIF
@@ -340,7 +346,7 @@ GetFileNameFromDialog	PROC USES esi filter_string:DWORD, initial_dir:DWORD, file
 	mov ofn.Flags, OFN_FILEMUSTEXIST or OFN_HIDEREADONLY or OFN_LONGNAMES
 	mov esi, dialog_title
 	mov ofn.lpstrTitle, esi	;“打开”对话框的标题
-	invoke GetOpenFileName, addr ofn	;显示打开对话框
+	INVOKE GetOpenFileName, addr ofn	;显示打开对话框
 	ret
 GetFileNameFromDialog	ENDP
 
