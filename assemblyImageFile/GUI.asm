@@ -15,6 +15,7 @@ INCLUDE		dll.inc
 	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	UnicodeStr			PROTO :DWORD, :DWORD
 	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
+	ChangeBtnStatus	PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
 	gdiplusLoadBitmapFromResource proto :HMODULE, :LPSTR, :LPSTR, :DWORD
 
 ;==================== DATA =======================
@@ -45,10 +46,13 @@ INCLUDE		dll.inc
 	emptyBtn			DD ?
 	openBtn				DD ?
 	openHoverBtn		DD ?
+	openClickBtn	DD ?
 	cameraBtn			DD ?
 	cameraHoverBtn		DD ?
+	cameraClickBtn	DD ?
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
+	exitClickBtn	DD ?
 
 	curLocation			location <?>
 
@@ -106,6 +110,7 @@ WinMain ENDP
 
 WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	LOCAL ps:PAINTSTRUCT
+  local stRect: RECT
 	LOCAL hdc:HDC
 	LOCAL hMemDC:HDC
 	LOCAL bm:BITMAP
@@ -123,16 +128,20 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE	LoadImageFromFile, OFFSET btnImage, ADDR emptyBtn
 		INVOKE	LoadImageFromFile, OFFSET openImage, ADDR openBtn
 		INVOKE	LoadImageFromFile, OFFSET openHoverImage, ADDR openHoverBtn
+		;INVOKE	LoadImageFromFile, OFFSET openClickImage, ADDR openClickBtn
 		INVOKE	LoadImageFromFile, OFFSET cameraImage, ADDR cameraBtn
 		INVOKE	LoadImageFromFile, OFFSET cameraHoverImage, ADDR cameraHoverBtn
+		; INVOKE	LoadImageFromFile, OFFSET cameraClickImage, ADDR cameraClickBtn
 		INVOKE	LoadImageFromFile, OFFSET exitImage, ADDR exitBtn
 		INVOKE	LoadImageFromFile, OFFSET exitHoverImage, ADDR exitHoverBtn
+		; INVOKE	LoadImageFromFile, OFFSET exitClickImage, ADDR exitClickBtn
 
 	.ELSEIF uMsg == WM_PAINT
 
 		INVOKE  BeginPaint, hWnd, ADDR ps
 		mov     hdc, eax
 
+		invoke  GetClientRect, hWnd, addr stRect 
 		INVOKE  CreateCompatibleDC, hdc
 		mov     hMemDC, eax
 		invoke  CreateCompatibleBitmap, hdc, 1024, 768		; 创建临时位图pbitmap
@@ -147,23 +156,34 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	GdipDrawImagePointRectI, graphics, background, 0, 0, 0, 0, 1024, 768, 2
 			
 			.IF openStatus == 0
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				; INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 				INVOKE	GdipDrawImagePointRectI, graphics, openBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-				INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
-				;INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, openLocation.x, edx, 0, 0, openLocation.w, openLocation.h, 2
-
+			.ELSE 
+				.IF openStatus == 1
+					INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				.ELSE
+					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				.ENDIF
 			.ENDIF
+
 			.IF cameraStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, cameraHoverBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+				.IF cameraStatus == 1
+					INVOKE	GdipDrawImagePointRectI, graphics, cameraHoverBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+				.ELSE
+					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+				.ENDIF
 			.ENDIF
+
 			.IF exitStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, exitBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+				.IF exitStatus == 1
+					INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+				.ELSE
+					INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+				.ENDIF
 			.ENDIF
 
 		.ENDIF
@@ -186,24 +206,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov ebx, lParam
 			shr ebx, 16			; y坐标
 			
-			; 判断初始界面的按钮状态
-			mov openStatus, 0
-			.IF eax > openLocation.x
-				mov ecx, openLocation.x
-				add ecx, openLocation.w
-				.IF eax < ecx
-					.IF ebx > openLocation.y
-						mov ecx, openLocation.y
-						add ecx, openLocation.h
-						.IF ebx < ecx
-							mov edx, 1
-							mov openStatus, edx
-							;invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
-						.ENDIF
-					.ENDIF
-				.ENDIF
-			.ENDIF
-
+			; 改变三个按钮的状态
+			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 1
+			
 		.ENDIF
 
 	.ELSEIF uMsg == WM_LBUTTONDOWN
@@ -216,6 +223,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov ebx, lParam
 			shr ebx, 16			; y坐标
 			
+			; 改变按钮状态
+			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 2
 			; 判断鼠标位于哪个按钮
 			.IF eax > cameraLocation.x
 				mov ecx, cameraLocation.x
@@ -242,14 +253,17 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ENDIF
 
 		.ENDIF
-
+	; 根据定时器定时更新界面
 	.ELSEIF uMsg == WM_TIMER
-
-		; 根据定时器定时更新界面
+		; 获得当前窗口的rectangle
+		invoke GetClientRect, hWnd, addr stRect
+		; 指定重绘区域
+		invoke InvalidateRect, hWnd, addr stRect, 0
+		; 发送绘制信息
 		invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
 
 	.ELSEIF uMsg == WM_DESTROY
-	
+
 		INVOKE  PostQuitMessage, NULL
 		
 	.ELSE
@@ -297,5 +311,31 @@ UnicodeStr	PROC USES esi ebx Source:DWORD, Dest:DWORD
 	jnz     @b
 	ret
 UnicodeStr	ENDP
+
+;-----------------------------------------------------
+ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
+; 改变按钮状态
+;-----------------------------------------------------
+	mov esi, btn_status_addr
+	mov DWORD PTR [esi], 0
+	mov eax, x
+	mov ebx, y
+	.IF eax > btn_location.x
+		mov ecx, btn_location.x
+		add ecx, btn_location.w
+		.IF eax < ecx
+			.IF ebx > btn_location.y
+				mov ecx, btn_location.y
+				add ecx, btn_location.h
+				.IF ebx < ecx
+					mov esi, btn_status_addr
+					mov edx, new_status
+					mov [esi], edx
+				.ENDIF
+			.ENDIF
+		.ENDIF
+	.ENDIF
+	ret
+ChangeBtnStatus	ENDP
 
 END START
