@@ -19,9 +19,10 @@ INCLUDE		dll.inc
 
 ;==================== DATA =======================
 ;外部可引用的变量
-PUBLIC StartupInfo
-PUBLIC UnicodeFileName
-PUBLIC token
+PUBLIC	StartupInfo
+PUBLIC	UnicodeFileName
+PUBLIC	token
+PUBLIC	ofn
 
 .data
 
@@ -42,7 +43,7 @@ PUBLIC token
 	hBitmap             DD ?
 	pNumbOfBytesRead    DD ?
 	StartupInfo         GdiplusStartupInput <?>
-	UnicodeFileName     DD 32 DUP(?)
+	UnicodeFileName     DD 256 DUP(0)
 	BmpImage            DD ?
 	token               DD ?
 
@@ -62,7 +63,7 @@ PUBLIC token
 	curLocation			location <?>
 
 	ofn					OPENFILENAME <0>
-	szFileName			DB 256 DUP(0)
+	szFileName			BYTE 256 DUP(0)
 	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
 	szInitialDir		DB './', 0 ; 初始目录
 	szTitle				DB '请选择图片', 0 ; 对话框标题
@@ -166,7 +167,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE  GdipCreateFromHDC, hMemDC, ADDR graphics	; 创建绘图对象graphics
 
 		.IF interfaceID == 0
-
+		
 			; 绘制初始界面
 			INVOKE	GdipDrawImagePointRectI, graphics, background, 0, 0, 0, 0, 1024, 768, 2
 			
@@ -195,8 +196,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ENDIF
 
 		.ELSEIF interfaceID == 1
-
-			INVOKE	LoadImageFromFile, ADDR szFileName, ADDR szImage
+		
+			INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
 			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
 
 		.ENDIF
@@ -244,10 +245,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于Open
 			mov eax, openStatus
 			.IF eax == 2
-				INVOKE GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
+				INVOKE	GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
 				mov edx, 1
 				mov interfaceID, edx
-				; INVOKE MessageBoxA, NULL, ADDR szFileName, ADDR szMessageTitle, NULL
+				;INVOKE	MessageBoxA, NULL, ADDR szFileName, ADDR szMessageTitle, NULL
 			.ENDIF
 
 			; 鼠标位于Camera
@@ -284,30 +285,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 WndProc	ENDP
 
 ;-----------------------------------------------------
-GetFileNameFromDialog	PROC USES esi filter_string:DWORD, initial_dir:DWORD, filename:DWORD, dialog_title:DWORD
-; 打开选择文件对话框 
-; https://www.daimajiaoliu.com/daima/37f6f0d89900406/huibianzhongshiyongdakaiduihuakuang
-; https://blog.csdn.net/weixin_33835103/article/details/91893316
-;-----------------------------------------------------
-	INVOKE	RtlZeroMemory,addr ofn, sizeof ofn
-	mov ofn.lStructSize, sizeof ofn		;结构的大小
-	mov esi, filter_string
-	mov ofn.lpstrFilter, esi	;文件过滤器
-	mov esi, initial_dir
-	mov ofn.lpstrInitialDir, esi ; 初始目录
-	mov esi, filename
-	mov ofn.lpstrFile, esi	;文件名的存放位置
-	mov ofn.nMaxFile, 256	;文件名的最大长度
-	mov ofn.Flags, OFN_FILEMUSTEXIST or OFN_HIDEREADONLY or OFN_LONGNAMES
-	mov esi, dialog_title
-	mov ofn.lpstrTitle, esi	;“打开”对话框的标题
-	INVOKE GetOpenFileName, addr ofn	;显示打开对话框
-	ret
-GetFileNameFromDialog	ENDP
-
-;-----------------------------------------------------
-ChangeBtnStatus	PROC USES eax ebx ecx edx esi 
-				x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
+ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
 ; 改变按钮状态
 ;-----------------------------------------------------
 	mov esi, btn_status_addr
