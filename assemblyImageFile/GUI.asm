@@ -8,13 +8,14 @@ INCLUDE		structure.inc
 INCLUDE		images.inc
 INCLUDE		dll.inc
 
-;==================== 找个词呗哥哥们 =======================
-	printf				PROTO C :ptr sbyte, :VARARG
+;==================== FUNCTION =======================
+	printf					PROTO C :ptr sbyte, :VARARG
 
-	WinMain				PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	WndProc				PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	LoadImageFromFile	PROTO :PTR BYTE, :DWORD
-	ChangeBtnStatus		PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
+	WinMain					PROTO :DWORD, :DWORD, :DWORD, :DWORD
+	WndProc					PROTO :DWORD, :DWORD, :DWORD, :DWORD
+	LoadImageFromFile		PROTO :PTR BYTE, :DWORD
+	ChangeBtnStatus			PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
+	GetFileNameFromDialog	PROTO :DWORD, :DWORD, :DWORD, :DWORD
 
 ;==================== DATA =======================
 ;外部可引用的变量
@@ -46,6 +47,7 @@ PUBLIC token
 	token               DD ?
 
 	background			DD ?
+	szImage				DD ?
 	emptyBtn			DD ?
 	openBtn				DD ?
 	openHoverBtn		DD ?
@@ -58,6 +60,13 @@ PUBLIC token
 	exitClickBtn		DD ?
 
 	curLocation			location <?>
+
+	ofn					OPENFILENAME <0>
+	szFileName			DB 256 DUP(0)
+	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
+	szInitialDir		DB './', 0 ; 初始目录
+	szTitle				DB '请选择图片', 0 ; 对话框标题
+	szMessageTitle		DB '你选择的文件是', 0
 
 ;=================== CODE =========================
 .code
@@ -113,13 +122,13 @@ WinMain ENDP
 
 WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	LOCAL ps:PAINTSTRUCT
-  local stRect: RECT
+	LOCAL stRect: RECT
 	LOCAL hdc:HDC
 	LOCAL hMemDC:HDC
 	LOCAL bm:BITMAP
 	LOCAL graphics:HANDLE
-	local pbitmap:HBITMAP
-	local nhb:DWORD
+	LOCAL pbitmap:HBITMAP
+	LOCAL nhb:DWORD
 
 	.IF uMsg == WM_CREATE
 
@@ -185,6 +194,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ENDIF
 
+		.ELSEIF interfaceID == 1
+
+			INVOKE	LoadImageFromFile, ADDR szFileName, ADDR szImage
+			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
+
 		.ENDIF
 
 		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; 绘图
@@ -227,6 +241,15 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 2
 			
+			; 鼠标位于Open
+			mov eax, openStatus
+			.IF eax == 2
+				INVOKE GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
+				mov edx, 1
+				mov interfaceID, edx
+				; INVOKE MessageBoxA, NULL, ADDR szFileName, ADDR szMessageTitle, NULL
+			.ENDIF
+
 			; 鼠标位于Camera
 			mov eax, cameraStatus;
 			.IF eax == 2					
@@ -259,6 +282,28 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	xor  eax, eax
 	ret
 WndProc	ENDP
+
+;-----------------------------------------------------
+GetFileNameFromDialog	PROC USES esi filter_string:DWORD, initial_dir:DWORD, filename:DWORD, dialog_title:DWORD
+; 打开选择文件对话框 
+; https://www.daimajiaoliu.com/daima/37f6f0d89900406/huibianzhongshiyongdakaiduihuakuang
+; https://blog.csdn.net/weixin_33835103/article/details/91893316
+;-----------------------------------------------------
+	INVOKE	RtlZeroMemory,addr ofn, sizeof ofn
+	mov ofn.lStructSize, sizeof ofn		;结构的大小
+	mov esi, filter_string
+	mov ofn.lpstrFilter, esi	;文件过滤器
+	mov esi, initial_dir
+	mov ofn.lpstrInitialDir, esi ; 初始目录
+	mov esi, filename
+	mov ofn.lpstrFile, esi	;文件名的存放位置
+	mov ofn.nMaxFile, 256	;文件名的最大长度
+	mov ofn.Flags, OFN_FILEMUSTEXIST or OFN_HIDEREADONLY or OFN_LONGNAMES
+	mov esi, dialog_title
+	mov ofn.lpstrTitle, esi	;“打开”对话框的标题
+	INVOKE GetOpenFileName, addr ofn	;显示打开对话框
+	ret
+GetFileNameFromDialog	ENDP
 
 ;-----------------------------------------------------
 ChangeBtnStatus	PROC USES eax ebx ecx edx esi 
