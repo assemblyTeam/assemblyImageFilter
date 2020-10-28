@@ -39,15 +39,30 @@ void openCamera()
 {
 	VideoCapture capture(0);
 
+	//namedWindow("empty", CV_WINDOW_NORMAL);
+	//resizeWindow("empty", 10, 10);
+	//moveWindow("empty", 300, 40);
+	namedWindow("camera", CV_WINDOW_NORMAL);
+	moveWindow("camera", 300, 40);
+
 	while (true)
 	{
 		Mat frame;
 		capture >> frame;
-		namedWindow("empty");
-		imshow("ÉãÏñÍ·", frame);
+		imshow("camera", frame);
+		moveWindow("camera", 300, 400);
 		//imwrite("images/Video.png", frame);
 		waitKey(30);	//ÑÓÊ±30
+		//remove("images/Video.png");
 	}
+}
+
+void captureFrame()
+{
+	VideoCapture capture(0);
+	Mat frame;
+	capture >> frame;
+	imwrite("images/Video.png", frame);
 }
 
 /*int main()
