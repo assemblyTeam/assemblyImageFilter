@@ -34,6 +34,7 @@ PUBLIC	ofn
 	cameraStatus	DWORD 0
 	backStatus		DWORD 0
 	exitStatus		DWORD 0
+	sumiaoStatus	DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
@@ -68,6 +69,8 @@ PUBLIC	ofn
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
 	exitClickBtn		DD ?
+	sumiaoBtn	DD ?
+	sumiaoHoverBtn	DD ?
 
 	curLocation			location <?>
 
@@ -172,6 +175,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE	LoadImageFromFile, OFFSET backImage, ADDR backBtn
 		INVOKE	LoadImageFromFile, OFFSET backHoverImage, ADDR backHoverBtn
 		;INVOKE	LoadImageFromFile, OFFSET backClickImage, ADDR backClickBtn
+		INVOKE   LoadImageFromFile, OFFSET sumiaoImage, ADDR sumiaoBtn
+		INVOKE   LoadImageFromFile, OFFSET sumiaoHoverImage, ADDR sumiaoHoverBtn
 
 		; 创建摄像头对象
 		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
@@ -233,6 +238,14 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GdipDrawImagePointRectI, graphics, backBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
 			.ENDIF
 
+			.IF sumiaoStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, sumiaoBtn, sumiaoLocation.x, sumiaoLocation.y, 0, 0, sumiaoLocation.w, sumiaoLocation.h, 2
+			.ELSEIF sumiaoStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, sumiaoHoverBtn, sumiaoLocation.x, sumiaoLocation.y, 0, 0, sumiaoLocation.w, sumiaoLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, sumiaoBtn, sumiaoLocation.x, sumiaoLocation.y, 0, 0, sumiaoLocation.w, sumiaoLocation.h, 2
+			.ENDIF
+
 		.ELSEIF interfaceID == 2
 			
 			; call frameFunc
@@ -277,6 +290,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		.ELSEIF interfaceID == 1
 			
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, sumiaoLocation, OFFSET sumiaoStatus, 1
 
 		.ELSEIF interfaceID == 2
 
@@ -340,6 +354,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			
 			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, sumiaoLocation, OFFSET sumiaoStatus, 2
 
 			; 鼠标位于back
 			mov eax, backStatus
@@ -348,6 +363,14 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
+
+			.ENDIF
+
+			; 鼠标位于sumiao
+			mov eax, sumiaoStatus
+			.IF eax == 2
+				
+				; TODO: 点击素描要干嘛
 
 			.ENDIF
 
