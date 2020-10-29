@@ -3,7 +3,9 @@
 
 	smFunction		BYTE "smImage", 0
 	cameraFunction	BYTE "openCamera", 0
+	frameFunction	BYTE "captureFrame", 0
 
 .data?
-	curDLL		HANDLE ?
-	curFunc		DD ?
+	OpenCV			HANDLE ?
+	cameraFunc		DD ?
+	frameFunc		DD ?

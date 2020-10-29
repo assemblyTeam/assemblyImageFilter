@@ -11,6 +11,8 @@ INCLUDE		dll.inc
 ;==================== FUNCTION =======================
 	printf					PROTO C :ptr sbyte, :VARARG
 
+	cameraThread			PROTO
+
 	WinMain					PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	WndProc					PROTO :DWORD, :DWORD, :DWORD, :DWORD
 	LoadImageFromFile		PROTO :PTR BYTE, :DWORD
@@ -41,6 +43,8 @@ PUBLIC	ofn
 .data?
 	hInstance           DD ?
 	hBitmap             DD ?
+	hEvent				DD ?
+	hThread				DD ?
 	pNumbOfBytesRead    DD ?
 	StartupInfo         GdiplusStartupInput <?>
 	UnicodeFileName     DD 256 DUP(0)
@@ -49,6 +53,7 @@ PUBLIC	ofn
 
 	background			DD ?
 	szImage				DD ?
+	frame				DD ?
 	emptyBtn			DD ?
 	openBtn				DD ?
 	openHoverBtn		DD ?
@@ -64,6 +69,8 @@ PUBLIC	ofn
 
 	ofn					OPENFILENAME <0>
 	szFileName			BYTE 256 DUP(0)
+	testMsg				BYTE '这是测试信息', 0
+	testTitle			BYTE '这是测试框', 0
 	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
 	szInitialDir		DB './', 0 ; 初始目录
 	szTitle				DB '请选择图片', 0 ; 对话框标题
@@ -102,7 +109,7 @@ WinMain PROC hInst:DWORD, hPrevInst:DWORD, CmdLine:DWORD, CmdShow:DWORD
 
 	INVOKE RegisterClassEx, ADDR wc
 	INVOKE CreateWindowEx, NULL, ADDR szClassName, ADDR WindowName, 
-		WS_OVERLAPPEDWINDOW, 460, 20, 1024, 768, NULL, NULL, hInst, NULL
+		WS_OVERLAPPEDWINDOW, 300, 40, 1024, 768, NULL, NULL, hInst, NULL
 	mov hWnd, eax
 	INVOKE ShowWindow, hWnd, SW_SHOWNORMAL
 	INVOKE UpdateWindow, hWnd
@@ -130,17 +137,23 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	LOCAL graphics:HANDLE
 	LOCAL pbitmap:HBITMAP
 	LOCAL nhb:DWORD
+	
+	LOCAL @dwThreadID
 
 	.IF uMsg == WM_CREATE
 
 		; 打开计时器
 		INVOKE	SetTimer, hWnd, 1, 10, NULL
 		
-		; 加载DLL
+		
 		INVOKE	LoadLibrary, OFFSET OpenCVDLL
-		mov		curDLL, eax
+		mov		OpenCV, eax			; 加载DLL
+		INVOKE	GetProcAddress, OpenCV, OFFSET cameraFunction
+		mov		cameraFunc, eax		; 加载摄像头函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET frameFunction
+		mov		frameFunc, eax		; 加载捕捉帧函数
 
-		; 加在文件中的图像
+		; 加载文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
 		INVOKE	LoadImageFromFile, OFFSET btnImage, ADDR emptyBtn
 		INVOKE	LoadImageFromFile, OFFSET openImage, ADDR openBtn
@@ -152,6 +165,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE	LoadImageFromFile, OFFSET exitImage, ADDR exitBtn
 		INVOKE	LoadImageFromFile, OFFSET exitHoverImage, ADDR exitHoverBtn
 		;INVOKE	LoadImageFromFile, OFFSET exitClickImage, ADDR exitClickBtn
+
+		; 创建摄像头对象
+		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
+		;mov		hEvent, eax
 
 	.ELSEIF uMsg == WM_PAINT
 
@@ -200,6 +217,15 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
 			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
 
+		.ELSEIF interfaceID == 2
+
+			; call frameFunc
+			;INVOKE	LoadImageFromFile, OFFSET frameImage, ADDR frame
+			;INVOKE	GdipDrawImagePointRectI, graphics, frame, 0, 0, 0, 0, 1024, 768, 2
+			;INVOKE  ResumeThread, hThread
+			;INVOKE	Sleep, 1000
+			;INVOKE  SuspendThread, hThread
+
 		.ENDIF
 
 		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; 绘图
@@ -246,17 +272,21 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, openStatus
 			.IF eax == 2
 				INVOKE	GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
-				mov edx, 1
-				mov interfaceID, edx
+				mov	edx, 1
+				mov	interfaceID, edx
 				;INVOKE	MessageBoxA, NULL, ADDR szFileName, ADDR szMessageTitle, NULL
 			.ENDIF
 
 			; 鼠标位于Camera
 			mov eax, cameraStatus;
 			.IF eax == 2					
-				INVOKE	GetProcAddress, curDLL, OFFSET cameraFunction
-				mov		curFunc, eax	; 加载摄像头函数
-				call	curFunc			; 调用摄像头函数
+				mov edx, 2
+				mov interfaceID, edx
+				; 创建打开摄像头的进程
+				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, ADDR @dwThreadID
+				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, ADDR @dwThreadID
+				mov		hThread, eax
+				;INVOKE  CloseHandle, eax
 			.ENDIF
 
 		.ENDIF
@@ -283,6 +313,14 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	xor  eax, eax
 	ret
 WndProc	ENDP
+
+cameraThread	PROC
+
+	call cameraFunc
+
+	ret
+
+cameraThread ENDP
 
 ;-----------------------------------------------------
 ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
