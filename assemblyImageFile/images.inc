@@ -11,8 +11,8 @@
 	backHoverImage		BYTE "images/exit_hover.png", 0
 	exitImage			BYTE "images/exit.png", 0
 	exitHoverImage		BYTE "images/exit_hover.png", 0
-	sumiaoImage	BYTE "images/sumiao.png", 0
-	sumiaoHoverImage	BYTE "images/sumiao_hover.png", 0
+	sumiaoImage	BYTE "images/start.png", 0
+	sumiaoHoverImage	BYTE "images/start_hover.png", 0
 
 	wgyImage			BYTE "images/WGY.png", 0
 	smwgyImage			BYTE "images/smWGY.png", 0
