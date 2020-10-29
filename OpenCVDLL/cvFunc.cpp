@@ -239,13 +239,6 @@ void captureFrame(int filterType)
 	}
 }
 
-void releaseCamera()
-{
-	VideoCapture capture(0);
-	capture.release();
-	destroyAllWindows();
-}
-
 void saveImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
