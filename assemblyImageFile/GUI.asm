@@ -527,7 +527,7 @@ SaveImg	PROC
 		;INVOKE MessageBoxA, NULL, addr saveFileName, addr szTitle, NULL
 		mov esi, OFFSET saveFileName
 		push esi
-		mov esi, OFFSET frameImage
+		mov esi, OFFSET tmp_Image
 		push esi
 		CALL	saveImageFunc
 		pop esi
