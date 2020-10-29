@@ -29,8 +29,10 @@ PUBLIC	ofn
 .data
 
 	interfaceID		DWORD 0	; 当前所处的界面，0是初始界面，1是打开图片，2是摄像机
-	openStatus		DWORD 0	; 控制按钮状态
+	; 控制按钮状态
+	openStatus		DWORD 0	
 	cameraStatus	DWORD 0
+	backStatus		DWORD 0
 	exitStatus		DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
@@ -61,6 +63,8 @@ PUBLIC	ofn
 	cameraBtn			DD ?
 	cameraHoverBtn		DD ?
 	cameraClickBtn		DD ?
+	backBtn				DD ?
+	backHoverBtn		DD ?
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
 	exitClickBtn		DD ?
@@ -75,6 +79,8 @@ PUBLIC	ofn
 	szInitialDir		DB './', 0 ; 初始目录
 	szTitle				DB '请选择图片', 0 ; 对话框标题
 	szMessageTitle		DB '你选择的文件是', 0
+
+	cameraThreadID		DD ?
 
 ;=================== CODE =========================
 .code
@@ -137,8 +143,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 	LOCAL graphics:HANDLE
 	LOCAL pbitmap:HBITMAP
 	LOCAL nhb:DWORD
-	
-	LOCAL @dwThreadID
 
 	.IF uMsg == WM_CREATE
 
@@ -165,6 +169,9 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE	LoadImageFromFile, OFFSET exitImage, ADDR exitBtn
 		INVOKE	LoadImageFromFile, OFFSET exitHoverImage, ADDR exitHoverBtn
 		;INVOKE	LoadImageFromFile, OFFSET exitClickImage, ADDR exitClickBtn
+		INVOKE	LoadImageFromFile, OFFSET backImage, ADDR backBtn
+		INVOKE	LoadImageFromFile, OFFSET backHoverImage, ADDR backHoverBtn
+		;INVOKE	LoadImageFromFile, OFFSET backClickImage, ADDR backClickBtn
 
 		; 创建摄像头对象
 		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
@@ -193,7 +200,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSEIF openStatus == 1
 				INVOKE	GdipDrawImagePointRectI, graphics, openHoverBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
+				INVOKE	GdipDrawImagePointRectI, graphics, openBtn, openLocation.x, openLocation.y, 0, 0, openLocation.w, openLocation.h, 2
 			.ENDIF
 
 			.IF cameraStatus == 0
@@ -201,7 +208,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSEIF cameraStatus == 1
 				INVOKE	GdipDrawImagePointRectI, graphics, cameraHoverBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
+				INVOKE	GdipDrawImagePointRectI, graphics, cameraBtn, cameraLocation.x, cameraLocation.y, 0, 0, cameraLocation.w, cameraLocation.h, 2
 			.ENDIF
 
 			.IF exitStatus == 0
@@ -209,7 +216,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSEIF exitStatus == 1
 				INVOKE	GdipDrawImagePointRectI, graphics, exitHoverBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ELSE
-				INVOKE	GdipDrawImagePointRectI, graphics, emptyBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
+				INVOKE	GdipDrawImagePointRectI, graphics, exitBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ENDIF
 
 		.ELSEIF interfaceID == 1
@@ -217,14 +224,30 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
 			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
 
-		.ELSEIF interfaceID == 2
+			; 绘制按钮
+			.IF backStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, backBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ELSEIF backStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, backHoverBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, backBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ENDIF
 
+		.ELSEIF interfaceID == 2
+			
 			; call frameFunc
 			;INVOKE	LoadImageFromFile, OFFSET frameImage, ADDR frame
 			;INVOKE	GdipDrawImagePointRectI, graphics, frame, 0, 0, 0, 0, 1024, 768, 2
 			;INVOKE  ResumeThread, hThread
 			;INVOKE	Sleep, 1000
 			;INVOKE  SuspendThread, hThread
+
+			; 绘制按钮
+			.IF backStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, backBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ELSEIF backStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, backHoverBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ENDIF
 
 		.ENDIF
 
@@ -238,30 +261,38 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 	.ELSEIF uMsg == WM_MOUSEMOVE
 
+		; 获取当前鼠标坐标
+		mov eax, lParam
+		and eax, 0000FFFFh	; x坐标
+		mov ebx, lParam
+		shr ebx, 16			; y坐标
+		
+		; 改变按钮状态
 		.IF interfaceID == 0
 
-			; 获取当前鼠标坐标
-			mov eax, lParam
-			and eax, 0000FFFFh	; x坐标
-			mov ebx, lParam
-			shr ebx, 16			; y坐标
+			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, OFFSET openStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, OFFSET cameraStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, OFFSET exitStatus, 1
 			
-			; 改变按钮状态
-			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 1
-			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 1
-			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 1
+		.ELSEIF interfaceID == 1
 			
+			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 1
+
+		.ELSEIF interfaceID == 2
+
+			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 1
+
 		.ENDIF
 
 	.ELSEIF uMsg == WM_LBUTTONDOWN
 		
-		.IF interfaceID == 0
+		; 获取当前鼠标坐标
+		mov eax, lParam
+		and eax, 0000FFFFh	; x坐标
+		mov ebx, lParam
+		shr ebx, 16			; y坐标
 
-			; 获取当前鼠标坐标
-			mov eax, lParam
-			and eax, 0000FFFFh	; x坐标
-			mov ebx, lParam
-			shr ebx, 16			; y坐标
+		.IF interfaceID == 0
 			
 			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 2
@@ -271,25 +302,74 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于Open
 			mov eax, openStatus
 			.IF eax == 2
+
+				; 打开文件选取窗口
 				INVOKE	GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
+
+				; 切换界面状态
 				mov	edx, 1
 				mov	interfaceID, edx
-				;INVOKE	MessageBoxA, NULL, ADDR szFileName, ADDR szMessageTitle, NULL
+				; 更改按键初始值
+				mov edx, 0
+				mov backStatus, edx
+
 			.ENDIF
 
 			; 鼠标位于Camera
-			mov eax, cameraStatus;
+			mov eax, cameraStatus
 			.IF eax == 2					
+
+				; 切换界面状态
 				mov edx, 2
 				mov interfaceID, edx
 				; 创建打开摄像头的进程
-				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, ADDR @dwThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, ADDR @dwThreadID
-				mov		hThread, eax
+				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
+				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
+				mov		hThread, eax	; 获取进程句柄
 				;INVOKE  CloseHandle, eax
+
+			.ENDIF
+
+			; 鼠标位于Exit
+			mov eax, exitStatus
+			.IF eax == 2
+				INVOKE	ExitProcess, 0
+			.ENDIF
+
+		.ELSEIF interfaceID == 1
+			
+			; 改变按钮状态
+			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
+
+			; 鼠标位于back
+			mov eax, backStatus
+			.IF eax == 2
+				
+				; 切换界面状态
+				mov edx, 0
+				mov interfaceID, edx
+
+			.ENDIF
+
+		.ELSEIF interfaceID == 2
+
+			; 改变按钮状态
+			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
+			
+			; 鼠标位于back
+			mov eax, backStatus
+			.IF eax == 2
+				; 切换界面状态
+				mov edx, 0
+				mov interfaceID, edx
+				; 杀死摄像头线程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				;INVOKE  GetExitCodeThread, hThread, ADDR cameraThreadID
+				;INVOKE  SuspendThread, hThread
 			.ENDIF
 
 		.ENDIF
+
 	; 根据定时器定时更新界面
 	.ELSEIF uMsg == WM_TIMER
 		; 获得当前窗口的rectangle
@@ -315,11 +395,9 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 WndProc	ENDP
 
 cameraThread	PROC
-
 	call cameraFunc
-
+	mov eax, 233
 	ret
-
 cameraThread ENDP
 
 ;-----------------------------------------------------

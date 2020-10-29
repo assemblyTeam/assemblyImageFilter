@@ -51,8 +51,8 @@ void openCamera()
 		capture >> frame;
 		imshow("camera", frame);
 		moveWindow("camera", 300, 400);
-		//imwrite("images/Video.png", frame);
-		waitKey(30);	//—” ±30
+		imwrite("images/Video.png", frame);
+		waitKey(300);	//—” ±30
 		//remove("images/Video.png");
 	}
 }

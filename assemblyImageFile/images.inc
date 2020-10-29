@@ -7,6 +7,8 @@
 	openHoverImage		BYTE "images/start_hover.png", 0
 	cameraImage			BYTE "images/camera.png", 0
 	cameraHoverImage	BYTE "images/camera_hover.png", 0
+	backImage			BYTE "images/exit.png", 0
+	backHoverImage		BYTE "images/exit_hover.png", 0
 	exitImage			BYTE "images/exit.png", 0
 	exitHoverImage		BYTE "images/exit_hover.png", 0
 
@@ -21,4 +23,5 @@
 	bkLocation			location <0, 0, 1024, 768>
 	openLocation		location <100, 100, 80, 23>
 	cameraLocation		location <300, 100, 80, 23>
+	backLocation		location <0, 0, 80, 23>
 	exitLocation		location <500, 100, 80, 23>
