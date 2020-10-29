@@ -5,6 +5,7 @@
 	cameraFunction	BYTE "openCamera", 0
 	releaseFunction	BYTE "releaseCamera", 0
 	frameFunction	BYTE "captureFrame", 0
+	saveImageFunction	BYTE "saveImage", 0
 
 .data?
 	OpenCV			HANDLE ?
@@ -12,3 +13,4 @@
 	cameraFunc		DD ?
 	releaseFunc		DD ?
 	frameFunc		DD ?
+	saveImageFunc	DD ?

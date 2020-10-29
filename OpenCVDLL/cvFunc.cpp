@@ -26,7 +26,7 @@ void greyImage(char* inputPath, char* outputPath)   //self
 		}
 
 	}
-	//imshow("ºÚ°×", img);
+	//imshow("ï¿½Ú°ï¿½", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
@@ -62,7 +62,7 @@ void oldImage(char* inputPath, char* outputPath)
 		}
 
 	}
-	//imshow("»³¾ÉÉ«", img);
+	//imshow("ï¿½ï¿½ï¿½ï¿½É«", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
@@ -87,7 +87,7 @@ void mblImage(char* inputPath, char* outputPath)
 		}
 
 	}
-	//imshow("À©É¢", img);
+	//imshow("ï¿½ï¿½É¢", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
@@ -106,7 +106,7 @@ void dkImage(char* inputPath, char* outputPath)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				int tmp1 = p0[3 * (x - 1) + i] - p1[3 * (x + 1) + i] + 128;//µñ¿Ì
+				int tmp1 = p0[3 * (x - 1) + i] - p1[3 * (x + 1) + i] + 128;//ï¿½ï¿½ï¿½
 				if (tmp1 < 0)
 					q1[3 * x + i] = 0;
 				else if (tmp1 > 255)
@@ -118,7 +118,7 @@ void dkImage(char* inputPath, char* outputPath)
 	}
 	imwrite(outputPath, img);
 	//imshow("src", src);
-	//imshow("µñ¿Ì", img);
+	//imshow("ï¿½ï¿½ï¿½", img);
 	waitKey(0);
 }
 
@@ -137,7 +137,7 @@ void fdImage(char* inputPath, char* outputPath)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;//¸¡µñ
+				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;//ï¿½ï¿½ï¿½ï¿½
 				if (tmp0 < 0)
 					q0[3 * x + i] = 0;
 				else if (tmp0 > 255)
@@ -149,7 +149,7 @@ void fdImage(char* inputPath, char* outputPath)
 	}
 	imwrite(outputPath, img);
 	//imshow("src", src);
-	//imshow("¸¡µñ", img);
+	//imshow("ï¿½ï¿½ï¿½ï¿½", img);
 	waitKey(0);
 
 }
@@ -163,12 +163,12 @@ void smImage(char* inputPath, char* outputPath)
 	//imshow("src", src);
 	//È¥É«
 	cvtColor(src, gray0, CV_BGR2GRAY);
-	//·´É«
+	//ï¿½ï¿½É«
 	addWeighted(gray0, -1, NULL, 0, 255, gray1);
-	//¸ßË¹Ä£ºý,¸ßË¹ºËµÄSizeÓë×îºóµÄÐ§¹ûÓÐ¹Ø
+	//ï¿½ï¿½Ë¹Ä£ï¿½ï¿½,ï¿½ï¿½Ë¹ï¿½Ëµï¿½Sizeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½Ð¹ï¿½
 	GaussianBlur(gray1, gray1, Size(11, 11), 0);
 
-	//ÈÚºÏ£ºÑÕÉ«¼õµ­
+	//ï¿½ÚºÏ£ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½
 	Mat img(gray1.size(), CV_8UC1);
 	for (int y = 0; y < heigh; y++)
 	{
@@ -185,11 +185,11 @@ void smImage(char* inputPath, char* outputPath)
 
 	}
 	imwrite(outputPath, img);
-	//imshow("ËØÃè", img);
+	//imshow("ï¿½ï¿½ï¿½ï¿½", img);
 	waitKey(0);
 }
 
-void openCamera()
+void openCamera(int filterType)
 {
 	VideoCapture capture(0);
 
@@ -208,7 +208,11 @@ void openCamera()
 	{
 		Mat frame;
 		capture >> frame;
-		imshow(winName, frame);
+		if (filterType)
+		{
+			imshow(winName, frame);
+		}
+		
 		//moveWindow(winName, 300, 400);
 		//imwrite("images/Video.png", frame);
 		waitKey(30);
@@ -224,12 +228,31 @@ void releaseCamera()
 	destroyAllWindows();
 }
 
-void captureFrame()
+void captureFrame(int filterType)
 {
 	VideoCapture capture(0);
 	Mat frame;
 	capture >> frame;
-	imwrite("images/Video.png", frame);
+	if (filterType == 0)
+	{
+		imwrite("images/tmp.png", frame);
+	}
+}
+
+void releaseCamera()
+{
+	VideoCapture capture(0);
+	capture.release();
+	destroyAllWindows();
+}
+
+void saveImage(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
+	string winName = "123";
+	namedWindow(winName, CV_WINDOW_NORMAL);
+	imshow(winName, src);
+	imwrite(outputPath, src);
 }
 
 int main()
