@@ -34,9 +34,13 @@ PUBLIC	ofn
 	cameraStatus	DWORD 0
 	backStatus		DWORD 0
 	exitStatus		DWORD 0
+	sumiaoStatus	DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
+
+	tmpFileName	BYTE "img_tmp.png", 0 	; 临时文件路径
+	isFiltered	DWORD 0								; 是否添加过滤镜
 
 	;初始化gdi+对象
 	gdiplusToken	DD ?
@@ -55,6 +59,7 @@ PUBLIC	ofn
 
 	background			DD ?
 	szImage				DD ?
+	tmpImage				DD ?
 	frame				DD ?
 	emptyBtn			DD ?
 	openBtn				DD ?
@@ -68,6 +73,8 @@ PUBLIC	ofn
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
 	exitClickBtn		DD ?
+	sumiaoBtn	DD ?
+	sumiaoHoverBtn	DD ?
 
 	curLocation			location <?>
 
@@ -158,6 +165,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		frameFunc, eax		; 加载捕捉帧函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET releaseFunction
 		mov		releaseFunc, eax
+		INVOKE	GetProcAddress, OpenCV, OFFSET smFunction
+		mov		smFunc, eax		; 加载素描滤镜函数
 
 		; 加载文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
@@ -174,6 +183,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE	LoadImageFromFile, OFFSET backImage, ADDR backBtn
 		INVOKE	LoadImageFromFile, OFFSET backHoverImage, ADDR backHoverBtn
 		;INVOKE	LoadImageFromFile, OFFSET backClickImage, ADDR backClickBtn
+		INVOKE   LoadImageFromFile, OFFSET sumiaoImage, ADDR sumiaoBtn
+		INVOKE   LoadImageFromFile, OFFSET sumiaoHoverImage, ADDR sumiaoHoverBtn
 
 		; 创建摄像头对象
 		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
@@ -223,8 +234,14 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.ELSEIF interfaceID == 1
 		
-			INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
-			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
+			; 检测当前是否加过滤镜
+			.IF isFiltered == 0
+				INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
+				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
+			.ELSE
+				INVOKE	LoadImageFromFile, OFFSET tmpFileName, ADDR tmpImage
+				INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 0, 0, 0, 0, 1024, 768, 2
+			.ENDIF
 
 			; 绘制按钮
 			.IF backStatus == 0
@@ -233,6 +250,14 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GdipDrawImagePointRectI, graphics, backHoverBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, backBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ENDIF
+
+			.IF sumiaoStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, sumiaoBtn, sumiaoLocation.x, sumiaoLocation.y, 0, 0, sumiaoLocation.w, sumiaoLocation.h, 2
+			.ELSEIF sumiaoStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, sumiaoHoverBtn, sumiaoLocation.x, sumiaoLocation.y, 0, 0, sumiaoLocation.w, sumiaoLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, sumiaoBtn, sumiaoLocation.x, sumiaoLocation.y, 0, 0, sumiaoLocation.w, sumiaoLocation.h, 2
 			.ENDIF
 
 		.ELSEIF interfaceID == 2
@@ -279,6 +304,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		.ELSEIF interfaceID == 1
 			
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, sumiaoLocation, OFFSET sumiaoStatus, 1
 
 		.ELSEIF interfaceID == 2
 
@@ -342,6 +368,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			
 			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, sumiaoLocation, OFFSET sumiaoStatus, 2
 
 			; 鼠标位于back
 			mov eax, backStatus
@@ -350,6 +377,24 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
+
+			.ENDIF
+
+			; 鼠标位于sumiao
+			mov eax, sumiaoStatus
+			.IF eax == 2
+				
+				; 调用素描滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call smFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
 
 			.ENDIF
 
