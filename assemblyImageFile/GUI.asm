@@ -165,6 +165,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		cameraFunc, eax		; 加载摄像头函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET frameFunction
 		mov		frameFunc, eax		; 加载捕捉帧函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET saveImageFunction
+		mov		saveImageFunc, eax
+		INVOKE  GetProcAddress, OpenCV, OFFSET smFunction
+		mov		smFunc, eax
 
 		; 加载文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
@@ -471,6 +475,13 @@ SaveImg	PROC
 	.IF eax != 0			;若选择有文件，则显示出来
 		; todo opencv save img
 		;INVOKE MessageBoxA, NULL, addr saveFileName, addr szTitle, NULL
+		mov esi, OFFSET saveFileName
+		push esi
+		mov esi, OFFSET frameImage
+		push esi
+		CALL	saveImageFunc
+		pop esi
+		pop esi
 	.ENDIF
 	ret
 SaveImg ENDP

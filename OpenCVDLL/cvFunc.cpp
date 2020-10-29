@@ -42,35 +42,31 @@ void openCamera(int filterType)
 	//namedWindow("empty", CV_WINDOW_NORMAL);
 	//resizeWindow("empty", 10, 10);
 	//moveWindow("empty", 300, 40);
-	namedWindow("camera", CV_WINDOW_NORMAL);
-	moveWindow("camera", 300, 40);
+	string winName = "camera";
+	srand(time(0));
+	winName += to_string(rand());
+
+	//namedWindow("empty");
+	namedWindow(winName, CV_WINDOW_NORMAL);
+	moveWindow(winName, 300, 400);
 
 	while (true)
 	{
 		Mat frame;
 		capture >> frame;
-<<<<<<< Updated upstream
-		imshow("camera", frame);
-		moveWindow("camera", 300, 400);
-		imwrite("images/Video.png", frame);
-		waitKey(300);	//ÑÓÊ±30
-=======
-		if (filterType == 0)
+		if (filterType)
 		{
 			imshow(winName, frame);
 		}
+		
 		//moveWindow(winName, 300, 400);
 		//imwrite("images/Video.png", frame);
 		waitKey(30);
 		frame.release();
->>>>>>> Stashed changes
 		//remove("images/Video.png");
 	}
 }
 
-<<<<<<< Updated upstream
-void captureFrame()
-=======
 void captureFrame(int filterType)
 {
 	VideoCapture capture(0);
@@ -83,11 +79,19 @@ void captureFrame(int filterType)
 }
 
 void releaseCamera()
->>>>>>> Stashed changes
 {
 	VideoCapture capture(0);
 	capture.release();
 	destroyAllWindows();
+}
+
+void saveImage(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
+	string winName = "123";
+	namedWindow(winName, CV_WINDOW_NORMAL);
+	imshow(winName, src);
+	imwrite(outputPath, src);
 }
 
 /*int main()
