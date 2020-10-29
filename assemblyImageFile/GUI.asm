@@ -163,6 +163,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		cameraFunc, eax		; 加载摄像头函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET frameFunction
 		mov		frameFunc, eax		; 加载捕捉帧函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET releaseFunction
+		mov		releaseFunc, eax
 		INVOKE	GetProcAddress, OpenCV, OFFSET smFunction
 		mov		smFunc, eax		; 加载素描滤镜函数
 
@@ -409,6 +411,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				mov interfaceID, edx
 				; 杀死摄像头线程
 				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
 				;INVOKE  GetExitCodeThread, hThread, ADDR cameraThreadID
 				;INVOKE  SuspendThread, hThread
 			.ENDIF
