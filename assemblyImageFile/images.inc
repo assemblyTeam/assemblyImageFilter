@@ -11,6 +11,8 @@
 	backHoverImage		BYTE "images/exit_hover.png", 0
 	exitImage			BYTE "images/exit.png", 0
 	exitHoverImage		BYTE "images/exit_hover.png", 0
+	sumiaoImage	BYTE "images/sumiao.png", 0
+	sumiaoHoverImage	BYTE "images/sumiao_hover.png", 0
 
 	wgyImage			BYTE "images/WGY.png", 0
 	smwgyImage			BYTE "images/smWGY.png", 0
@@ -25,3 +27,4 @@
 	cameraLocation		location <300, 100, 80, 23>
 	backLocation		location <0, 0, 80, 23>
 	exitLocation		location <500, 100, 80, 23>
+	sumiaoLocation	location <800, 50, 80, 23>
