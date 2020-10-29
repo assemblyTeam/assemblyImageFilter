@@ -19,5 +19,6 @@ using namespace std;
 // ±©Â¶º¯Êý½Ó¿Ú
 extern "C" __declspec(dllexport) void smImage(char*, char*);
 extern "C" __declspec(dllexport) void openCamera();
+extern "C" __declspec(dllexport) void releaseCamera();
 extern "C" __declspec(dllexport) void captureFrame();
 #endif

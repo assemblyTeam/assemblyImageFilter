@@ -42,19 +42,32 @@ void openCamera()
 	//namedWindow("empty", CV_WINDOW_NORMAL);
 	//resizeWindow("empty", 10, 10);
 	//moveWindow("empty", 300, 40);
-	namedWindow("camera", CV_WINDOW_NORMAL);
-	moveWindow("camera", 300, 40);
+	string winName = "camera";
+	srand(time(0));
+	winName += to_string(rand());
+
+	//namedWindow("empty");
+	namedWindow(winName, CV_WINDOW_NORMAL);
+	moveWindow(winName, 300, 400);
 
 	while (true)
 	{
 		Mat frame;
 		capture >> frame;
-		imshow("camera", frame);
-		moveWindow("camera", 300, 400);
-		imwrite("images/Video.png", frame);
-		waitKey(300);	//—” ±30
+		imshow(winName, frame);
+		//moveWindow(winName, 300, 400);
+		//imwrite("images/Video.png", frame);
+		waitKey(30);
+		frame.release();
 		//remove("images/Video.png");
 	}
+}
+
+void releaseCamera()
+{
+	VideoCapture capture(0);
+	capture.release();
+	destroyAllWindows();
 }
 
 void captureFrame()
