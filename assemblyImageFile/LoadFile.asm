@@ -5,20 +5,20 @@ Option Casemap :None
 INCLUDE		header.inc
 
 .data
-;ÉùÃ÷ÎªÍâ²¿±äÁ¿
+;å£°æ˜ä¸ºå¤–éƒ¨å˜é‡
 EXTERN		StartupInfo:		GdiplusStartupInput
 EXTERN		UnicodeFileName:	DWORD
 EXTERN		token:				DWORD
 EXTERN		ofn:				OPENFILENAME
 
-;Íâ²¿¿Éµ÷ÓÃµÄº¯Êı
+;å¤–éƒ¨å¯è°ƒç”¨çš„å‡½æ•°
 PUBLIC		LoadImageFromFile
 PUBLIC		GetFileNameFromDialog
 
 .code
 ;-----------------------------------------------------
 UnicodeStr	PROC USES esi Source:DWORD, Dest:DWORD
-; ÓÃÓÚ½«Í¼Æ¬Ãû³Æ×ª»»³ÉUnicode×Ö·û´®
+; ç”¨äºå°†å›¾ç‰‡åç§°è½¬æ¢æˆUnicodeå­—ç¬¦ä¸²
 ;-----------------------------------------------------
 	mov     ebx, 1
 	mov     esi, Source
@@ -37,7 +37,7 @@ UnicodeStr	ENDP
 
 ;-----------------------------------------------------
 LoadImageFromFile	PROC FileName:PTR BYTE, Bitmap:DWORD
-; ´ÓÎÄ¼şÖĞ¶ÁÈ¡Í¼Æ¬×ª»»³ÉBitmap²¢´æÈëBitmap
+; ä»æ–‡ä»¶ä¸­è¯»å–å›¾ç‰‡è½¬æ¢æˆBitmapå¹¶å­˜å…¥Bitmap
 ;-----------------------------------------------------
 	;mov     eax, OFFSET StartupInfo
 	;mov     GdiplusStartupInput.GdiplusVersion[eax], 1
@@ -53,23 +53,23 @@ LoadImageFromFile	ENDP
 
 ;-----------------------------------------------------
 GetFileNameFromDialog	PROC USES esi filter_string:DWORD, initial_dir:DWORD, filename:DWORD, dialog_title:DWORD
-; ´ò¿ªÑ¡ÔñÎÄ¼ş¶Ô»°¿ò 
+; æ‰“å¼€é€‰æ‹©æ–‡ä»¶å¯¹è¯æ¡† 
 ; https://www.daimajiaoliu.com/daima/37f6f0d89900406/huibianzhongshiyongdakaiduihuakuang
 ; https://blog.csdn.net/weixin_33835103/article/details/91893316
 ;-----------------------------------------------------
 	INVOKE	RtlZeroMemory, addr ofn, sizeof ofn
-	mov ofn.lStructSize, sizeof ofn		;½á¹¹µÄ´óĞ¡
+	mov ofn.lStructSize, sizeof ofn		;ç»“æ„çš„å¤§å°
 	mov esi, filter_string
-	mov ofn.lpstrFilter, esi	;ÎÄ¼ş¹ıÂËÆ÷
+	mov ofn.lpstrFilter, esi	;æ–‡ä»¶è¿‡æ»¤å™¨
 	mov esi, initial_dir
-	mov ofn.lpstrInitialDir, esi ; ³õÊ¼Ä¿Â¼
+	mov ofn.lpstrInitialDir, esi ; åˆå§‹ç›®å½•
 	mov esi, filename
-	mov ofn.lpstrFile, esi	;ÎÄ¼şÃûµÄ´æ·ÅÎ»ÖÃ
-	mov ofn.nMaxFile, 256	;ÎÄ¼şÃûµÄ×î´ó³¤¶È
+	mov ofn.lpstrFile, esi	;æ–‡ä»¶åçš„å­˜æ”¾ä½ç½®
+	mov ofn.nMaxFile, 256	;æ–‡ä»¶åçš„æœ€å¤§é•¿åº¦
 	mov ofn.Flags, OFN_FILEMUSTEXIST or OFN_HIDEREADONLY or OFN_LONGNAMES
 	mov esi, dialog_title
-	mov ofn.lpstrTitle, esi	;¡°´ò¿ª¡±¶Ô»°¿òµÄ±êÌâ
-	INVOKE GetOpenFileName, addr ofn	;ÏÔÊ¾´ò¿ª¶Ô»°¿ò
+	mov ofn.lpstrTitle, esi	;â€œæ‰“å¼€â€å¯¹è¯æ¡†çš„æ ‡é¢˜
+	INVOKE GetOpenFileName, addr ofn	;æ˜¾ç¤ºæ‰“å¼€å¯¹è¯æ¡†
 	ret
 GetFileNameFromDialog	ENDP
 

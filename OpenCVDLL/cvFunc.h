@@ -16,7 +16,7 @@
 using namespace cv;
 using namespace std;
 
-// ��¶�����ӿ�
+// 将函数接口暴露出来
 extern "C" __declspec(dllexport) void smImage(char*, char*);
 extern "C" __declspec(dllexport) void releaseCamera();
 extern "C" __declspec(dllexport) void openCamera(int);

@@ -21,7 +21,7 @@ INCLUDE		dll.inc
 	SaveImg		PROTO 
 
 ;==================== DATA =======================
-;外部�?引用的变�?
+;外部可引用的变量
 PUBLIC	StartupInfo
 PUBLIC	UnicodeFileName
 PUBLIC	token
@@ -29,8 +29,8 @@ PUBLIC	ofn
 
 .data
 
-	interfaceID		DWORD 0	; 当前扢�处的界面�?0�?初�?�界�?�?1�?打开图片�?2�?摄像�?
-	; 控制按钮状��?
+	interfaceID		DWORD 0	; 当前所处的界面，0是初始界面，1是打开图片，2是摄像机
+	; 控制按钮状态
 	openStatus		DWORD 0	
 	cameraStatus	DWORD 0
 	backStatus		DWORD 0
@@ -41,10 +41,10 @@ PUBLIC	ofn
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
 
-	tmpFileName	BYTE "img_tmp.png", 0 	; 临时文件�?�?
-	isFiltered	DWORD 0								; �?否添加过滤镜
+	tmpFileName	BYTE "img_tmp.png", 0 	; 临时文件
+	isFiltered	DWORD 0								; 是否否添加过滤镜
 
-	;初�?�化gdi+对象
+	;初始化gdi+对象
 	gdiplusToken	DD ?
 	gdiplusSInput	GdiplusStartupInput <1, NULL, FALSE, FALSE>
 
@@ -86,11 +86,11 @@ PUBLIC	ofn
 	save_ofn		OPENFILENAME <0>
 	szFileName			BYTE 256 DUP(0)
 	testMsg				BYTE '这是测试信息', 0
-	testTitle			BYTE '这是测试�?', 0
+	testTitle			BYTE '这是测试�?', 0
 	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
-	szInitialDir		DB './', 0 ; 初�?�目�?
-	szTitle				DB '请��择图片', 0 ; 对话框标�?
-	szMessageTitle		DB '你��择的文件是', 0
+	szInitialDir		DB './', 0 ; 初始目录
+	szTitle				DB '请��择图片', 0 ; 对话框标题
+	szMessageTitle		DB '你��择的文件是', 0
 	saveFileName		BYTE 256 DUP(0)
 
 	szWidth		DD ?
@@ -162,16 +162,16 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 	.IF uMsg == WM_CREATE
 
-		; 打开计时�?
+		; 打开计时器
 		INVOKE	SetTimer, hWnd, 1, 10, NULL
 		
 		
 		INVOKE	LoadLibrary, OFFSET OpenCVDLL
 		mov		OpenCV, eax			; 加载DLL
 		INVOKE	GetProcAddress, OpenCV, OFFSET cameraFunction
-		mov		cameraFunc, eax		; 加载摄像头函�?
+		mov		cameraFunc, eax		; 加载摄像头函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET frameFunction
-		mov		frameFunc, eax		; 加载捕捉帧函�?
+		mov		frameFunc, eax		; 加载捕捉帧函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET releaseFunction
 		mov		releaseFunc, eax
 		INVOKE	GetProcAddress, OpenCV, OFFSET smFunction
@@ -179,7 +179,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE	GetProcAddress, OpenCV, OFFSET saveImageFunction
 		mov		saveImageFunc, eax
 
-		; 加载文件�?的图�?
+		; 加载文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
 		INVOKE	LoadImageFromFile, OFFSET btnImage, ADDR emptyBtn
 		INVOKE	LoadImageFromFile, OFFSET openImage, ADDR openBtn
@@ -199,7 +199,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE   LoadImageFromFile, OFFSET sumiaoImage, ADDR sumiaoBtn
 		INVOKE   LoadImageFromFile, OFFSET sumiaoHoverImage, ADDR sumiaoHoverBtn
 
-		; 创建摄像头�?�象
+		; 创建摄像头对象
 		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
 		;mov		hEvent, eax
 
@@ -218,7 +218,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.IF interfaceID == 0
 		
-			; 绘制初�?�界�?
+			; 绘制初始界面
 			INVOKE	GdipDrawImagePointRectI, graphics, background, 0, 0, 0, 0, 1024, 768, 2
 			
 			.IF openStatus == 0
@@ -247,7 +247,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		; 显示图片界面
 		.ELSEIF interfaceID == 1
 		
-			; 棢�测当前是否加过滤�?
+			; 检测当前是否加过滤镜
 			.IF isFiltered == 0
 				INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
 				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
@@ -319,7 +319,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov ebx, lParam
 		shr ebx, 16			; y坐标
 		
-		; 改变按钮状��?
+		; 改变按钮状态
 		.IF interfaceID == 0
 
 			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, OFFSET openStatus, 1
@@ -348,7 +348,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.IF interfaceID == 0
 			
-			; 改变按钮状��?
+			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, openLocation, offset openStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, cameraLocation, offset cameraStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, exitLocation, offset exitStatus, 2
@@ -361,10 +361,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
 				; 等于0说明没有打开文件
 				.IF eax != 0
-					; 切换界面状��?
+					; 切换界面状态
 					mov	edx, 1
 					mov	interfaceID, edx
-					; 更改按键初�?���?
+					; 更改按键初始值
 					mov edx, 0
 					mov backStatus, edx
 				.ENDIF
@@ -375,7 +375,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, cameraStatus
 			.IF eax == 2					
 
-				; 切换界面状��?
+				; 切换界面状态
 				mov edx, 2
 				mov interfaceID, edx
 				; 创建打开摄像头的进程
@@ -394,7 +394,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.ELSEIF interfaceID == 1
 			
-			; 改变按钮状��?
+			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, sumiaoLocation, OFFSET sumiaoStatus, 2
 
@@ -403,7 +403,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, backStatus
 			.IF eax == 2
 				
-				; 切换界面状��?
+				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
 
@@ -426,7 +426,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call smFunc
 				pop eax
 				pop eax
-				; 切换状��?
+				; 切换状状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -434,16 +434,16 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.ELSEIF interfaceID == 2
 
-			; 改变按钮状��?
+			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
 			
 			; 鼠标位于back
 			mov eax, backStatus
 			.IF eax == 2
-				; 切换界面状��?
+				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
-				; 杢�死摄像头线程
+				; 杀死摄像头线程
 				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
 				call	releaseFunc
 				;INVOKE  GetExitCodeThread, hThread, ADDR cameraThreadID
@@ -452,13 +452,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.ENDIF
 
-	; 根据定时器定时更新界�?
+	; 根据定时器定时更新界面
 	.ELSEIF uMsg == WM_TIMER
 		; 获得当前窗口的rectangle
 		invoke GetClientRect, hWnd, addr stRect
 		; 指定重绘区域
 		invoke InvalidateRect, hWnd, addr stRect, 0
-		; 发��绘制信�?
+		; 发送绘制信息
 		invoke SendMessage, hWnd, WM_PAINT, NULL, NULL
 
 	.ELSEIF uMsg == WM_DESTROY
@@ -486,7 +486,7 @@ cameraThread ENDP
 
 ;-----------------------------------------------------
 ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:location, btn_status_addr:DWORD, new_status:DWORD
-; 改变按钮状��?
+; 改变按钮状态
 ;-----------------------------------------------------
 	mov esi, btn_status_addr
 	mov DWORD PTR [esi], 0
@@ -512,17 +512,17 @@ ChangeBtnStatus	ENDP
 
 ;-----------------------------------------------------
 SaveImg	PROC 
-; 保存图片到指定路�?
+; 保存图片到指定路径
 ;-----------------------------------------------------
 	INVOKE	RtlZeroMemory, addr save_ofn, sizeof save_ofn
-	mov save_ofn.lStructSize, sizeof save_ofn		;结构的大�?
-	mov save_ofn.lpstrFilter, OFFSET szFilterString	;文件过滤�?
-	mov save_ofn.lpstrInitialDir, OFFSET szInitialDir ; 初�?�目�?
+	mov save_ofn.lStructSize, sizeof save_ofn		;结构的大小
+	mov save_ofn.lpstrFilter, OFFSET szFilterString	;文件过滤器
+	mov save_ofn.lpstrInitialDir, OFFSET szInitialDir ; 初始目录
 	mov save_ofn.lpstrFile, OFFSET saveFileName	;文件名的存放位置
-	mov save_ofn.nMaxFile, 256	;文件名的朢�大长�?
+	mov save_ofn.nMaxFile, 256	;文件名的最大长度
 	mov	save_ofn.Flags, OFN_PATHMUSTEXIST
 	INVOKE	GetSaveFileName, addr save_ofn
-	.IF eax != 0			;若��择有文件，则显示出�?
+	.IF eax != 0			;若选择了文件
 		; todo opencv save img
 		;INVOKE MessageBoxA, NULL, addr saveFileName, addr szTitle, NULL
 		mov esi, OFFSET saveFileName

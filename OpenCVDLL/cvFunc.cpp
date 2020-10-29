@@ -26,7 +26,6 @@ void greyImage(char* inputPath, char* outputPath)   //self
 		}
 
 	}
-	//imshow("�ڰ�", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
@@ -62,7 +61,6 @@ void oldImage(char* inputPath, char* outputPath)
 		}
 
 	}
-	//imshow("����ɫ", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
@@ -87,7 +85,6 @@ void mblImage(char* inputPath, char* outputPath)
 		}
 
 	}
-	//imshow("��ɢ", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
@@ -106,7 +103,7 @@ void dkImage(char* inputPath, char* outputPath)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				int tmp1 = p0[3 * (x - 1) + i] - p1[3 * (x + 1) + i] + 128;//���
+				int tmp1 = p0[3 * (x - 1) + i] - p1[3 * (x + 1) + i] + 128;
 				if (tmp1 < 0)
 					q1[3 * x + i] = 0;
 				else if (tmp1 > 255)
@@ -118,7 +115,6 @@ void dkImage(char* inputPath, char* outputPath)
 	}
 	imwrite(outputPath, img);
 	//imshow("src", src);
-	//imshow("���", img);
 	waitKey(0);
 }
 
@@ -137,7 +133,7 @@ void fdImage(char* inputPath, char* outputPath)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;//����
+				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;
 				if (tmp0 < 0)
 					q0[3 * x + i] = 0;
 				else if (tmp0 > 255)
@@ -149,7 +145,6 @@ void fdImage(char* inputPath, char* outputPath)
 	}
 	imwrite(outputPath, img);
 	//imshow("src", src);
-	//imshow("����", img);
 	waitKey(0);
 
 }
@@ -161,14 +156,13 @@ void smImage(char* inputPath, char* outputPath)
 	int heigh = src.rows;
 	Mat gray0, gray1;
 	//imshow("src", src);
-	//ȥɫ
 	cvtColor(src, gray0, CV_BGR2GRAY);
-	//��ɫ
+	//
 	addWeighted(gray0, -1, NULL, 0, 255, gray1);
-	//��˹ģ��,��˹�˵�Size������Ч���й�
+	//
 	GaussianBlur(gray1, gray1, Size(11, 11), 0);
 
-	//�ںϣ���ɫ����
+	//
 	Mat img(gray1.size(), CV_8UC1);
 	for (int y = 0; y < heigh; y++)
 	{
@@ -185,7 +179,6 @@ void smImage(char* inputPath, char* outputPath)
 
 	}
 	imwrite(outputPath, img);
-	//imshow("����", img);
 	waitKey(0);
 }
 
