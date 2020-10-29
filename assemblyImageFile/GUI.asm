@@ -18,6 +18,7 @@ INCLUDE		dll.inc
 	LoadImageFromFile		PROTO :PTR BYTE, :DWORD
 	ChangeBtnStatus			PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
 	GetFileNameFromDialog	PROTO :DWORD, :DWORD, :DWORD, :DWORD
+	SaveImg		PROTO 
 
 ;==================== DATA =======================
 ;外部可引用的变量
@@ -33,6 +34,7 @@ PUBLIC	ofn
 	openStatus		DWORD 0	
 	cameraStatus	DWORD 0
 	backStatus		DWORD 0
+	saveStatus		DWORD 0
 	exitStatus		DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
@@ -65,6 +67,8 @@ PUBLIC	ofn
 	cameraClickBtn		DD ?
 	backBtn				DD ?
 	backHoverBtn		DD ?
+	saveBtn				DD ?
+	saveHoverBtn	DD ?
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
 	exitClickBtn		DD ?
@@ -72,6 +76,7 @@ PUBLIC	ofn
 	curLocation			location <?>
 
 	ofn					OPENFILENAME <0>
+	save_ofn		OPENFILENAME <0>
 	szFileName			BYTE 256 DUP(0)
 	testMsg				BYTE '这是测试信息', 0
 	testTitle			BYTE '这是测试框', 0
@@ -79,6 +84,10 @@ PUBLIC	ofn
 	szInitialDir		DB './', 0 ; 初始目录
 	szTitle				DB '请选择图片', 0 ; 对话框标题
 	szMessageTitle		DB '你选择的文件是', 0
+	saveFileName		BYTE 256 DUP(0)
+
+	szWidth		DD ?
+	szHeight	DD ?
 
 	cameraThreadID		DD ?
 
@@ -171,6 +180,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		;INVOKE	LoadImageFromFile, OFFSET exitClickImage, ADDR exitClickBtn
 		INVOKE	LoadImageFromFile, OFFSET backImage, ADDR backBtn
 		INVOKE	LoadImageFromFile, OFFSET backHoverImage, ADDR backHoverBtn
+		INVOKE	LoadImageFromFile, OFFSET openImage, ADDR saveBtn
+		INVOKE	LoadImageFromFile, OFFSET openHoverImage, ADDR saveHoverBtn
 		;INVOKE	LoadImageFromFile, OFFSET backClickImage, ADDR backClickBtn
 
 		; 创建摄像头对象
@@ -218,10 +229,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, exitBtn, exitLocation.x, exitLocation.y, 0, 0, exitLocation.w, exitLocation.h, 2
 			.ENDIF
-
+		; 显示图片界面
 		.ELSEIF interfaceID == 1
 		
 			INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
+			INVOKE	GdipGetImageWidth, szImage, OFFSET szWidth
+			INVOKE	GdipGetImageHeight, szImage, OFFSET szHeight
 			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
 
 			; 绘制按钮
@@ -231,6 +244,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GdipDrawImagePointRectI, graphics, backHoverBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, backBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ENDIF
+			.IF saveStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, saveBtn, saveLocation.x, saveLocation.y, 0, 0, saveLocation.w, saveLocation.h, 2
+			.ELSEIF saveStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, saveHoverBtn, saveLocation.x, saveLocation.y, 0, 0, saveLocation.w, saveLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, saveBtn, saveLocation.x, saveLocation.y, 0, 0, saveLocation.w, saveLocation.h, 2
 			.ENDIF
 
 		.ELSEIF interfaceID == 2
@@ -277,6 +297,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		.ELSEIF interfaceID == 1
 			
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 1
 
 		.ELSEIF interfaceID == 2
 
@@ -305,13 +326,15 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 				; 打开文件选取窗口
 				INVOKE	GetFileNameFromDialog, ADDR szFilterString, ADDR szInitialDir, ADDR szFileName, ADDR szTitle
-
-				; 切换界面状态
-				mov	edx, 1
-				mov	interfaceID, edx
-				; 更改按键初始值
-				mov edx, 0
-				mov backStatus, edx
+				; 等于0说明没有打开文件
+				.IF eax != 0
+					; 切换界面状态
+					mov	edx, 1
+					mov	interfaceID, edx
+					; 更改按键初始值
+					mov edx, 0
+					mov backStatus, edx
+				.ENDIF
 
 			.ENDIF
 
@@ -340,7 +363,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			
 			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
-
+			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 2
 			; 鼠标位于back
 			mov eax, backStatus
 			.IF eax == 2
@@ -349,6 +372,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				mov edx, 0
 				mov interfaceID, edx
 
+			.ENDIF
+			mov eax, saveStatus
+			.IF eax == 2
+				; todo
+				INVOKE SaveImg 
 			.ENDIF
 
 		.ELSEIF interfaceID == 2
@@ -428,4 +456,22 @@ ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:loc
 	ret
 ChangeBtnStatus	ENDP
 
+;-----------------------------------------------------
+SaveImg	PROC 
+; 保存图片到指定路径
+;-----------------------------------------------------
+	INVOKE	RtlZeroMemory, addr save_ofn, sizeof save_ofn
+	mov save_ofn.lStructSize, sizeof save_ofn		;结构的大小
+	mov save_ofn.lpstrFilter, OFFSET szFilterString	;文件过滤器
+	mov save_ofn.lpstrInitialDir, OFFSET szInitialDir ; 初始目录
+	mov save_ofn.lpstrFile, OFFSET saveFileName	;文件名的存放位置
+	mov save_ofn.nMaxFile, 256	;文件名的最大长度
+	mov	save_ofn.Flags, OFN_PATHMUSTEXIST
+	INVOKE	GetSaveFileName, addr save_ofn
+	.IF eax != 0			;若选择有文件，则显示出来
+		; todo opencv save img
+		;INVOKE MessageBoxA, NULL, addr saveFileName, addr szTitle, NULL
+	.ENDIF
+	ret
+SaveImg ENDP
 END START

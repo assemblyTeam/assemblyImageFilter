@@ -1,6 +1,6 @@
 ;==================== IMAGES =======================
 .data
-	; ³õÊ¼»¯Â·¾¶Ãû
+	; ï¿½ï¿½Ê¼ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½
 	bkImage				BYTE "images/bg.png", 0
 	btnImage			BYTE "images/button_bg.png", 0
 	openImage			BYTE "images/start.png", 0
@@ -21,9 +21,10 @@
 
 	pngType				BYTE "PNG", 0
 
-	; °´Å¥×ø±ê
+	; ï¿½ï¿½Å¥ï¿½ï¿½ï¿½ï¿½
 	bkLocation			location <0, 0, 1024, 768>
 	openLocation		location <100, 100, 80, 23>
 	cameraLocation		location <300, 100, 80, 23>
 	backLocation		location <0, 0, 80, 23>
+	saveLocation		location <100, 0, 80, 23>
 	exitLocation		location <500, 100, 80, 23>
