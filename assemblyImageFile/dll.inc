@@ -7,5 +7,6 @@
 
 .data?
 	OpenCV			HANDLE ?
+	smFunc			DD ?
 	cameraFunc		DD ?
 	frameFunc		DD ?

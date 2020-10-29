@@ -39,6 +39,9 @@ PUBLIC	ofn
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
 
+	tmpFileName	BYTE "img_tmp.png", 0 	; 临时文件路径
+	isFiltered	DWORD 0								; 是否添加过滤镜
+
 	;初始化gdi+对象
 	gdiplusToken	DD ?
 	gdiplusSInput	GdiplusStartupInput <1, NULL, FALSE, FALSE>
@@ -56,6 +59,7 @@ PUBLIC	ofn
 
 	background			DD ?
 	szImage				DD ?
+	tmpImage				DD ?
 	frame				DD ?
 	emptyBtn			DD ?
 	openBtn				DD ?
@@ -159,6 +163,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		cameraFunc, eax		; 加载摄像头函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET frameFunction
 		mov		frameFunc, eax		; 加载捕捉帧函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET smFunction
+		mov		smFunc, eax		; 加载素描滤镜函数
 
 		; 加载文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
@@ -226,8 +232,14 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		.ELSEIF interfaceID == 1
 		
-			INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
-			INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
+			; 检测当前是否加过滤镜
+			.IF isFiltered == 0
+				INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
+				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
+			.ELSE
+				INVOKE	LoadImageFromFile, OFFSET tmpFileName, ADDR tmpImage
+				INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 0, 0, 0, 0, 1024, 768, 2
+			.ENDIF
 
 			; 绘制按钮
 			.IF backStatus == 0
@@ -370,7 +382,17 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, sumiaoStatus
 			.IF eax == 2
 				
-				; TODO: 点击素描要干嘛
+				; 调用素描滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call smFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
 
 			.ENDIF
 
