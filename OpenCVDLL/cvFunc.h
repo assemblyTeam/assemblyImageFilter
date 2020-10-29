@@ -18,6 +18,12 @@ using namespace std;
 
 // ±©Â¶º¯Êý½Ó¿Ú
 extern "C" __declspec(dllexport) void smImage(char*, char*);
+<<<<<<< Updated upstream
 extern "C" __declspec(dllexport) void openCamera();
 extern "C" __declspec(dllexport) void captureFrame();
+=======
+extern "C" __declspec(dllexport) void openCamera(int);
+extern "C" __declspec(dllexport) void releaseCamera();
+extern "C" __declspec(dllexport) void captureFrame(int);
+>>>>>>> Stashed changes
 #endif

@@ -9,6 +9,8 @@
 	cameraHoverImage	BYTE "images/camera_hover.png", 0
 	backImage			BYTE "images/exit.png", 0
 	backHoverImage		BYTE "images/exit_hover.png", 0
+	exportImage			BYTE "images/start.png", 0
+	exportHoverImage	BYTE "images/start_hover.png", 0
 	exitImage			BYTE "images/exit.png", 0
 	exitHoverImage		BYTE "images/exit_hover.png", 0
 

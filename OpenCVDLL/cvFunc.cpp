@@ -35,7 +35,7 @@ void smImage(char* inputPath, char* outputPath)
 	waitKey(0);
 }
 
-void openCamera()
+void openCamera(int filterType)
 {
 	VideoCapture capture(0);
 
@@ -49,20 +49,45 @@ void openCamera()
 	{
 		Mat frame;
 		capture >> frame;
+<<<<<<< Updated upstream
 		imshow("camera", frame);
 		moveWindow("camera", 300, 400);
 		imwrite("images/Video.png", frame);
 		waitKey(300);	//ÑÓÊ±30
+=======
+		if (filterType == 0)
+		{
+			imshow(winName, frame);
+		}
+		//moveWindow(winName, 300, 400);
+		//imwrite("images/Video.png", frame);
+		waitKey(30);
+		frame.release();
+>>>>>>> Stashed changes
 		//remove("images/Video.png");
 	}
 }
 
+<<<<<<< Updated upstream
 void captureFrame()
+=======
+void captureFrame(int filterType)
 {
 	VideoCapture capture(0);
 	Mat frame;
 	capture >> frame;
-	imwrite("images/Video.png", frame);
+	if (filterType == 0)
+	{
+		imwrite("images/tmp.png", frame);
+	}
+}
+
+void releaseCamera()
+>>>>>>> Stashed changes
+{
+	VideoCapture capture(0);
+	capture.release();
+	destroyAllWindows();
 }
 
 /*int main()

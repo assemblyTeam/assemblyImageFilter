@@ -395,7 +395,9 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 WndProc	ENDP
 
 cameraThread	PROC
+	push 0
 	call cameraFunc
+	pop eax
 	mov eax, 233
 	ret
 cameraThread ENDP
