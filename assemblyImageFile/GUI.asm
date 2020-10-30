@@ -18,7 +18,7 @@ INCLUDE		dll.inc
 	LoadImageFromFile		PROTO :PTR BYTE, :DWORD
 	ChangeBtnStatus			PROTO :DWORD, :DWORD, :location, :DWORD, :DWORD
 	GetFileNameFromDialog	PROTO :DWORD, :DWORD, :DWORD, :DWORD
-	SaveImg		PROTO 
+	SaveImg		PROTO
 
 ;==================== DATA =======================
 ;外部可引用的变量
@@ -86,13 +86,13 @@ PUBLIC	ofn
 	save_ofn		OPENFILENAME <0>
 	szFileName			BYTE 256 DUP(0)
 	testMsg				BYTE '这是测试信息', 0
-	testTitle			BYTE '这是测试�?', 0
+	testTitle			BYTE '这是测试', 0
 	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
 	szInitialDir		DB './', 0 ; 初始目录
-	szTitle				DB '请��择图片', 0 ; 对话框标题
-	szMessageTitle		DB '你��择的文件是', 0
+	szTitle				DB '请选择择图片', 0 ; 对话框标题
+	szMessageTitle		DB '你选择择的文件是', 0
 	saveFileName		BYTE 256 DUP(0)
-
+	currentWorkDir	BYTE 256 DUP(0)
 	szWidth		DD ?
 	szHeight	DD ?
 
@@ -411,7 +411,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, saveStatus
 			.IF eax == 2
 				; todo
-				INVOKE SaveImg 
+				INVOKE SaveImg
 			.ENDIF
 
 			; 鼠标位于sumiao
@@ -511,7 +511,7 @@ ChangeBtnStatus	PROC USES eax ebx ecx edx esi x:DWORD, y:DWORD, btn_location:loc
 ChangeBtnStatus	ENDP
 
 ;-----------------------------------------------------
-SaveImg	PROC 
+SaveImg	PROC	USES esi edi ecx
 ; 保存图片到指定路径
 ;-----------------------------------------------------
 	INVOKE	RtlZeroMemory, addr save_ofn, sizeof save_ofn
@@ -523,8 +523,45 @@ SaveImg	PROC
 	mov	save_ofn.Flags, OFN_PATHMUSTEXIST
 	INVOKE	GetSaveFileName, addr save_ofn
 	.IF eax != 0			;若选择了文件
-		; todo opencv save img
-		;INVOKE MessageBoxA, NULL, addr saveFileName, addr szTitle, NULL
+		; 获得了当前可执行文件的目录 含\*.exe
+		; INVOKE GetModuleFileName, hInstance, addr currentWorkDir, 256
+		; INVOKE MessageBoxA, NULL, addr currentWorkDir, addr szTitle, NULL
+		; 拼接字符串 tmp_Image为临时文件的绝对路径
+		mov esi, OFFSET szFileName
+		mov edi, OFFSET tmp_Image
+		mov eax, [esi]
+		L1:
+			mov ebx, [esi]
+			mov [edi], ebx
+			add esi, 1
+			add edi, 1
+			mov eax, [esi]
+			cmp eax, 0
+			jne L1
+		sub edi, 1
+		mov eax, [edi]
+
+		L2:
+			mov eax, 0
+			mov [edi], eax
+			sub edi, 1
+			mov eax, [edi]
+			cmp eax, '\'
+			jne L2
+		add edi, 1
+
+		mov esi, OFFSET tmpFileName
+		mov eax, [esi]
+		L3:
+			mov ebx, [esi]
+			mov [edi], ebx
+			add esi, 1
+			add edi, 1
+			mov eax, [esi]
+			cmp eax, 0
+			jne L3
+		; INVOKE MessageBoxA, NULL, addr tmp_Image, addr szTitle, NULL
+
 		mov esi, OFFSET saveFileName
 		push esi
 		mov esi, OFFSET tmp_Image

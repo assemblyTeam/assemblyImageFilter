@@ -235,9 +235,6 @@ void captureFrame(int filterType)
 void saveImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
-	string winName = "123";
-	namedWindow(winName, CV_WINDOW_NORMAL);
-	imshow(winName, src);
 	imwrite(outputPath, src);
 }
 
