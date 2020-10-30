@@ -46,6 +46,7 @@ PUBLIC	ofn
 	geteStatus			DWORD 0
 	menghuanStatus	DWORD 0
 	yuhuaStatus			DWORD 0
+	mopiStatus			DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
@@ -106,6 +107,8 @@ PUBLIC	ofn
 	menghuanHoverBtn	DD ?
 	yuhuaBtn	DD ?
 	yuhuaHoverBtn	DD ?
+	mopiBtn	DD ?
+	mopiHoverBtn	DD ?
 
 	curLocation			location <?>
 
@@ -221,6 +224,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		menghuanFunc, eax		; 加载梦幻滤镜函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET yuhuaFunction
 		mov		yuhuaFunc, eax		; 加载羽化滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET mopiFunction
+		mov		mopiFunc, eax		; 加载磨皮滤镜函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET saveImageFunction
 		mov		saveImageFunc, eax
 
@@ -261,6 +266,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE   LoadImageFromFile, OFFSET menghuanHoverImage, ADDR menghuanHoverBtn
 		INVOKE   LoadImageFromFile, OFFSET yuhuaImage, ADDR yuhuaBtn
 		INVOKE   LoadImageFromFile, OFFSET yuhuaHoverImage, ADDR yuhuaHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET mopiImage, ADDR mopiBtn
+		INVOKE   LoadImageFromFile, OFFSET mopiHoverImage, ADDR mopiHoverBtn
 
 		; 创建摄像头对象
 		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
@@ -410,6 +417,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, yuhuaBtn, yuhuaLocation.x, yuhuaLocation.y, 0, 0, yuhuaLocation.w, yuhuaLocation.h, 2
 			.ENDIF
+			.IF mopiStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, mopiBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
+			.ELSEIF mopiStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, mopiHoverBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, mopiBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
+			.ENDIF
 
 		.ELSEIF interfaceID == 2
 			
@@ -465,6 +479,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, geteLocation, OFFSET geteStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, menghuanLocation, OFFSET menghuanStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 1
 
 		.ELSEIF interfaceID == 2
@@ -541,6 +556,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, geteLocation, OFFSET geteStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, menghuanLocation, OFFSET menghuanStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 2
 
 			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 2
 			; 鼠标位于back
@@ -550,8 +566,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
+				; 切换图片状态
+				mov eax, 0
+				mov isFiltered, eax
 
 			.ENDIF
+
+			; 鼠标位于save
 			mov eax, saveStatus
 			.IF eax == 2
 				; todo
@@ -570,7 +591,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call sumiaoFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -580,7 +601,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, fudiaoStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用浮雕滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -588,7 +609,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call fudiaoFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -598,7 +619,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, maoboliStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用毛玻璃滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -606,7 +627,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call maoboliFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -616,7 +637,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, huaijiuStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用怀旧滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -624,7 +645,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call huaijiuFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -634,7 +655,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, huiduStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用灰度滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -642,7 +663,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call huiduFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -652,7 +673,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, heduStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用褐度滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -660,7 +681,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call heduFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -670,7 +691,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, danyaStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用淡雅滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -678,7 +699,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call danyaFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -688,7 +709,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, geteStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用哥特滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -696,7 +717,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call geteFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -706,7 +727,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, menghuanStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用梦幻滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -714,7 +735,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call menghuanFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
@@ -724,7 +745,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, yuhuaStatus
 			.IF eax == 2
 				
-				; 调用素描滤镜函数
+				; 调用羽化滤镜函数
 				mov ebx, OFFSET tmpFileName
 				mov edx, OFFSET szFileName
 				push ebx
@@ -732,7 +753,25 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call yuhuaFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于mopi
+			mov eax, mopiStatus
+			.IF eax == 2
+				
+				; 调用磨皮滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call mopiFunc
+				pop eax
+				pop eax
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 
