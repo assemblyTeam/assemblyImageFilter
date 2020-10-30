@@ -18,6 +18,7 @@ using namespace cv;
 using namespace std;
 
 // 将函数接口暴露出来
+extern "C" __declspec(dllexport) void mopiImage(char*, char*);
 extern "C" __declspec(dllexport) void yuhuaImage(char*, char*);
 extern "C" __declspec(dllexport) void menghuanImage(char*, char*);
 extern "C" __declspec(dllexport) void geteImage(char*, char*);

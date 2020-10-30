@@ -32,3 +32,4 @@
 	geteFunc		DD ?
 	menghuanFunc	DD ?
 	yuhuaFunc		DD ?
+	mopiFunc		DD ?

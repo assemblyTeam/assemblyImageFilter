@@ -1,7 +1,60 @@
 #include "cvFunc.h"
 
+//磨皮
+void mopiImage(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
 
-//yuhua10
+	Mat dst;
+	int value1 = 3, value2 = 1;// 磨皮程度与细节程度的确定
+	int dx = value1 * 5; // 双边滤波参数之一
+	double fc = value1 * 12.5; // 双边滤波参数之一
+	double p = 0.1f; // 透明度
+	Mat temp1;
+
+	// 双边滤波
+	bilateralFilter(src, temp1, dx, fc, fc);
+
+
+	Mat temp22;
+	//temp2 = (temp1 - src + 128);
+	subtract(temp1, src, temp22);
+
+
+	// Core.subtract(temp22, new Scalar(128), temp2);
+	//Mat temp222(temp22.rows, temp22.cols, temp22.channels(), Scalar(10, 10, 10, 128));
+	//imwrite(outputPath, temp222);
+
+	Mat temp2;
+	add(temp22, (128, 128, 128, 128), temp2);
+
+
+	// 高斯模糊
+	Mat temp3;
+	GaussianBlur(temp2, temp3, Size(2 * value2 - 1, 2 * value2 - 1), 0, 0);
+
+
+	// temp4 = image + 2 * temp3 - 255;
+	Mat temp44;
+	Mat temp4;
+	temp3.convertTo(temp44, temp3.type(), 2, -255);
+
+
+	add(src, temp44, temp4);
+
+	// dst = (image*(100 - p) + temp4*p) / 100;
+	addWeighted(src, p, temp4, 1 - p, 0.0, dst);
+
+	//Mat temp5(temp4.cols, temp4.rows, temp4.type(), Scalar(10, 10, 10));
+	add(dst, (10, 10, 10), dst);
+
+	imwrite(outputPath, dst);
+
+	waitKey(0);
+
+}
+
+//羽化10
 void yuhuaImage(char* inputPath, char* outputPath)
 {
 	float mSize = 0.7;
