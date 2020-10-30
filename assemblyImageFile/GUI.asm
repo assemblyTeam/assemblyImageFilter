@@ -569,6 +569,7 @@ SaveImg	PROC	USES esi edi ecx
 		CALL	saveImageFunc
 		pop esi
 		pop esi
+		INVOKE DeleteFile, addr tmp_Image
 	.ENDIF
 	ret
 SaveImg ENDP
