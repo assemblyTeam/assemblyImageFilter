@@ -18,7 +18,16 @@ using namespace cv;
 using namespace std;
 
 // 将函数接口暴露出来
-extern "C" __declspec(dllexport) void smImage(char*, char*);
+extern "C" __declspec(dllexport) void yuhuaImage(char*, char*);
+extern "C" __declspec(dllexport) void menghuanImage(char*, char*);
+extern "C" __declspec(dllexport) void geteImage(char*, char*);
+extern "C" __declspec(dllexport) void danyaImage(char*, char*);
+extern "C" __declspec(dllexport) void heduImage(char*, char*);
+extern "C" __declspec(dllexport) void huiduImage(char*, char*);
+extern "C" __declspec(dllexport) void huaijiuImage(char*, char*);
+extern "C" __declspec(dllexport) void maoboliImage(char*, char*);
+extern "C" __declspec(dllexport) void fudiaoImage(char*, char*);
+extern "C" __declspec(dllexport) void sumiaoImage(char*, char*);
 extern "C" __declspec(dllexport) void releaseCamera();
 extern "C" __declspec(dllexport) void openCamera(int);
 extern "C" __declspec(dllexport) void captureFrame(int);

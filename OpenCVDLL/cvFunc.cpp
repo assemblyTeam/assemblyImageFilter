@@ -1,7 +1,213 @@
 #include "cvFunc.h"
 
 
-void greyImage(char* inputPath, char* outputPath)   //self
+//yuhua10
+void yuhuaImage(char* inputPath, char* outputPath)
+{
+	float mSize = 0.7;
+	Mat src = imread(inputPath);
+	int width = src.cols;
+	int heigh = src.rows;
+	int centerX = width >> 1;
+	int centerY = heigh >> 1;
+
+	int maxV = centerX * centerX + centerY * centerY;
+	int minV = (int)(maxV * (1 - mSize));
+	int diff = maxV - minV;
+	float ratio = width > heigh ? (float)heigh / (float)width : (float)width / (float)heigh;
+
+	Mat img;
+	src.copyTo(img);
+
+	Scalar avg = mean(src);
+	Mat dst(img.size(), CV_8UC3);
+	Mat mask1u[3];
+	float tmp, r;
+	for (int y = 0; y < heigh; y++)
+	{
+		uchar* imgP = img.ptr<uchar>(y);
+		uchar* dstP = dst.ptr<uchar>(y);
+		for (int x = 0; x < width; x++)
+		{
+			int b = imgP[3 * x];
+			int g = imgP[3 * x + 1];
+			int r = imgP[3 * x + 2];
+
+			float dx = centerX - x;
+			float dy = centerY - y;
+
+			if (width > heigh)
+				dx = (dx * ratio);
+			else
+				dy = (dy * ratio);
+
+			int dstSq = dx * dx + dy * dy;
+
+			float v = ((float)dstSq / diff) * 255;
+
+			r = (int)(r + v);
+			g = (int)(g + v);
+			b = (int)(b + v);
+			r = (r > 255 ? 255 : (r < 0 ? 0 : r));
+			g = (g > 255 ? 255 : (g < 0 ? 0 : g));
+			b = (b > 255 ? 255 : (b < 0 ? 0 : b));
+
+			dstP[3 * x] = (uchar)b;
+			dstP[3 * x + 1] = (uchar)g;
+			dstP[3 * x + 2] = (uchar)r;
+		}
+	}
+	imwrite(outputPath, dst);
+
+	waitKey(0);
+}
+
+//梦幻9
+void menghuanImage(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
+	int width = src.cols;
+	int heigh = src.rows;
+	RNG rng;
+	Mat img(src.size(), CV_8UC3);
+	for (int y = 0; y < heigh; y++)
+	{
+		uchar* P0 = src.ptr<uchar>(y);
+		uchar* P1 = img.ptr<uchar>(y);
+		for (int x = 0; x < width; x++)
+		{
+			float B = P0[3 * x];
+			float G = P0[3 * x + 1];
+			float R = P0[3 * x + 2];
+			float newR = 0.8 * R + 0.3 * G + 0.1 * B + 46.5;
+			float newG = 0.1 * R + 0.9 * G + 0.0 * B + 46.5;
+			float newB = 0.1 * R + 0.3 * G + 0.7 * B + 46.5;
+			if (newB < 0)newB = 0;
+			if (newB > 255)newB = 255;
+			if (newG < 0)newG = 0;
+			if (newG > 255)newG = 255;
+			if (newR < 0)newR = 0;
+			if (newR > 255)newR = 255;
+			P1[3 * x] = (uchar)newB;
+			P1[3 * x + 1] = (uchar)newG;
+			P1[3 * x + 2] = (uchar)newR;
+		}
+	}
+	//imshow("怀旧色", img);
+	imwrite(outputPath, img);
+	waitKey(0);
+}
+
+//哥特8
+void geteImage(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
+	int width = src.cols;
+	int heigh = src.rows;
+	RNG rng;
+	Mat img(src.size(), CV_8UC3);
+	for (int y = 0; y < heigh; y++)
+	{
+		uchar* P0 = src.ptr<uchar>(y);
+		uchar* P1 = img.ptr<uchar>(y);
+		for (int x = 0; x < width; x++)
+		{
+			float B = P0[3 * x];
+			float G = P0[3 * x + 1];
+			float R = P0[3 * x + 2];
+			float newR = 1.9 * R + (-0.3) * G + (-0.2) * B - 87.0;
+			float newG = (-0.2) * R + 1.7 * G + (-0.1) * B - 87.0;
+			float newB = (-0.1) * R + (-0.6) * G + 2.0 * B - 87.0;
+			if (newB < 0)newB = 0;
+			if (newB > 255)newB = 255;
+			if (newG < 0)newG = 0;
+			if (newG > 255)newG = 255;
+			if (newR < 0)newR = 0;
+			if (newR > 255)newR = 255;
+			P1[3 * x] = (uchar)newB;
+			P1[3 * x + 1] = (uchar)newG;
+			P1[3 * x + 2] = (uchar)newR;
+		}
+	}
+	//imshow("怀旧色", img);
+	imwrite(outputPath, img);
+	waitKey(0);
+}
+
+//淡雅7
+void danyaImage(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
+	int width = src.cols;
+	int heigh = src.rows;
+	RNG rng;
+	Mat img(src.size(), CV_8UC3);
+	for (int y = 0; y < heigh; y++)
+	{
+		uchar* P0 = src.ptr<uchar>(y);
+		uchar* P1 = img.ptr<uchar>(y);
+		for (int x = 0; x < width; x++)
+		{
+			float B = P0[3 * x];
+			float G = P0[3 * x + 1];
+			float R = P0[3 * x + 2];
+			float newR = 0.6 * R + 0.3 * G + 0.1 * B - 73.3;
+			float newG = 0.2 * R + 0.7 * G + 0.1 * B - 73.3;
+			float newB = 0.2 * R + 0.3 * G + 0.4 * B - 73.3;
+			if (newB < 0)newB = 0;
+			if (newB > 255)newB = 255;
+			if (newG < 0)newG = 0;
+			if (newG > 255)newG = 255;
+			if (newR < 0)newR = 0;
+			if (newR > 255)newR = 255;
+			P1[3 * x] = (uchar)newB;
+			P1[3 * x + 1] = (uchar)newG;
+			P1[3 * x + 2] = (uchar)newR;
+		}
+	}
+	//imshow("怀旧色", img);
+	imwrite(outputPath, img);
+	waitKey(0);
+}
+
+//褐度6
+void heduImage(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
+	int width = src.cols;
+	int heigh = src.rows;
+	RNG rng;
+	Mat img(src.size(), CV_8UC3);
+	for (int y = 0; y < heigh; y++)
+	{
+		uchar* P0 = src.ptr<uchar>(y);
+		uchar* P1 = img.ptr<uchar>(y);
+		for (int x = 0; x < width; x++)
+		{
+			float B = P0[3 * x];
+			float G = P0[3 * x + 1];
+			float R = P0[3 * x + 2];
+			float newB = R * 0.393 + G * 0.769 + B * 0.189;
+			float newG = R * 0.349 + G * 0.686 + B * 0.168;
+			float newR = R * 0.272 + G * 0.534 + B * 0.131;
+			if (newB < 0)newB = 0;
+			if (newB > 255)newB = 255;
+			if (newG < 0)newG = 0;
+			if (newG > 255)newG = 255;
+			if (newR < 0)newR = 0;
+			if (newR > 255)newR = 255;
+			P1[3 * x] = (uchar)newB;
+			P1[3 * x + 1] = (uchar)newG;
+			P1[3 * x + 2] = (uchar)newR;
+		}
+	}
+	//imshow("怀旧色", img);
+	imwrite(outputPath, img);
+	waitKey(0);
+}
+
+//灰度5
+void huiduImage(char* inputPath, char* outputPath)   //self
 {
 	Mat src = imread(inputPath);
 	int width = src.cols;
@@ -26,11 +232,13 @@ void greyImage(char* inputPath, char* outputPath)   //self
 		}
 
 	}
+	//imshow("黑白", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-void oldImage(char* inputPath, char* outputPath)
+//怀旧4
+void huaijiuImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
 	int width = src.cols;
@@ -59,13 +267,14 @@ void oldImage(char* inputPath, char* outputPath)
 			P1[3 * x + 1] = (uchar)newG;
 			P1[3 * x + 2] = (uchar)newR;
 		}
-
 	}
+	//imshow("怀旧色", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-void mblImage(char* inputPath, char* outputPath)
+//毛玻璃3
+void maoboliImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
 	int width = src.cols;
@@ -85,40 +294,13 @@ void mblImage(char* inputPath, char* outputPath)
 		}
 
 	}
+	//imshow("扩散", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-void dkImage(char* inputPath, char* outputPath)
-{
-	Mat src = imread(inputPath);
-	Mat img(src.size(), CV_8UC3);
-	for (int y = 1; y < src.rows - 1; y++)
-	{
-		uchar* p0 = src.ptr<uchar>(y);
-		uchar* p1 = src.ptr<uchar>(y + 1);
-
-		uchar* q1 = img.ptr<uchar>(y);
-		for (int x = 1; x < src.cols - 1; x++)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				int tmp1 = p0[3 * (x - 1) + i] - p1[3 * (x + 1) + i] + 128;
-				if (tmp1 < 0)
-					q1[3 * x + i] = 0;
-				else if (tmp1 > 255)
-					q1[3 * x + i] = 255;
-				else
-					q1[3 * x + i] = tmp1;
-			}
-		}
-	}
-	imwrite(outputPath, img);
-	//imshow("src", src);
-	waitKey(0);
-}
-
-void fdImage(char* inputPath, char* outputPath)
+//浮雕2
+void fudiaoImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
 	Mat img(src.size(), CV_8UC3);
@@ -133,7 +315,7 @@ void fdImage(char* inputPath, char* outputPath)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;
+				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;//浮雕
 				if (tmp0 < 0)
 					q0[3 * x + i] = 0;
 				else if (tmp0 > 255)
@@ -145,24 +327,27 @@ void fdImage(char* inputPath, char* outputPath)
 	}
 	imwrite(outputPath, img);
 	//imshow("src", src);
+	//imshow("浮雕", img);
 	waitKey(0);
 
 }
 
-void smImage(char* inputPath, char* outputPath)
+//素描1
+void sumiaoImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
 	int width = src.cols;
 	int heigh = src.rows;
 	Mat gray0, gray1;
 	//imshow("src", src);
+	//去色
 	cvtColor(src, gray0, CV_BGR2GRAY);
-	//
+	//反色
 	addWeighted(gray0, -1, NULL, 0, 255, gray1);
-	//
+	//高斯模糊,高斯核的Size与最后的效果有关
 	GaussianBlur(gray1, gray1, Size(11, 11), 0);
 
-	//
+	//融合：颜色减淡
 	Mat img(gray1.size(), CV_8UC1);
 	for (int y = 0; y < heigh; y++)
 	{
@@ -179,6 +364,7 @@ void smImage(char* inputPath, char* outputPath)
 
 	}
 	imwrite(outputPath, img);
+	//imshow("素描", img);
 	waitKey(0);
 }
 
