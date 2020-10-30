@@ -1,6 +1,7 @@
 .data
 	OpenCVDLL		BYTE "OpenCVDLL.dll", 0
 
+	mopiFunction	BYTE "mopiImage", 0
 	yuhuaFunction	BYTE "yuhuaImage", 0
 	menghuanFunction	BYTE "menghuanImage", 0
 	geteFunction	BYTE "geteImage", 0
@@ -32,3 +33,4 @@
 	geteFunc		DD ?
 	menghuanFunc	DD ?
 	yuhuaFunc		DD ?
+	mopiFunc		DD ?
