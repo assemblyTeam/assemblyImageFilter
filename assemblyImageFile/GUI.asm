@@ -174,8 +174,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		frameFunc, eax		; 加载捕捉帧函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET releaseFunction
 		mov		releaseFunc, eax
-		INVOKE	GetProcAddress, OpenCV, OFFSET smFunction
-		mov		smFunc, eax		; 加载素描滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET sumiaoFunction
+		mov		sumiaoFunc, eax		; 加载素描滤镜函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET saveImageFunction
 		mov		saveImageFunc, eax
 
@@ -423,7 +423,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				mov edx, OFFSET szFileName
 				push ebx
 				push edx
-				call smFunc
+				call sumiaoFunc
 				pop eax
 				pop eax
 				; 切换状状态
