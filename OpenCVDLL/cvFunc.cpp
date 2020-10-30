@@ -201,7 +201,7 @@ void openCamera(int filterType)
 	{
 		Mat frame;
 		capture >> frame;
-		if (filterType)
+		if (filterType == 0)
 		{
 			imshow(winName, frame);
 		}
