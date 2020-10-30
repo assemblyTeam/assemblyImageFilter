@@ -424,10 +424,8 @@ void saveImage(char* inputPath, char* outputPath)
 	imwrite(outputPath, src);
 }
 
-int main()
+/*int main()
 {
-	char p1[] = "D:/test6.png";
-	char p2[] = "D:/111.jpg";
-	greyImage(p1, p2);
+	
 	return 0;
-}
+}*/
