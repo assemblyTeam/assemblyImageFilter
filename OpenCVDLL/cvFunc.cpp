@@ -915,6 +915,5 @@ void saveImage(char* inputPath, char* outputPath)
 
 /*int main()
 {
-	
 	return 0;
 }*/
