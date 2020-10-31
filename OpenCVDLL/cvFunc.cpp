@@ -1,5 +1,6 @@
 #include "cvFunc.h"
 
+
 //磨皮
 void mopiImage(char* inputPath, char* outputPath)
 {
@@ -479,6 +480,5 @@ void saveImage(char* inputPath, char* outputPath)
 
 /*int main()
 {
-	
 	return 0;
 }*/
