@@ -41,7 +41,7 @@
 	tmp_Image			BYTE 256 DUP(0)
 	frameImage			BYTE "images/Video.png", 0
 
-	pngType				BYTE "PNG", 0
+	pngType				BYTE ".png", 0
 
 	; ��ť����
 	bkLocation			location <0, 0, 1024, 768>
