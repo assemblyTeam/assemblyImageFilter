@@ -35,6 +35,8 @@
 	yuhuaHoverImage	BYTE "images/start_hover.png", 0
 	mopiImage	BYTE "images/start.png", 0									;11
 	mopiHoverImage	BYTE "images/start_hover.png", 0
+	yuantuImage	BYTE "images/start.png", 0
+	yuantuHoverImage	BYTE "images/start_hover.png", 0
 
 	wgyImage			BYTE "images/WGY.png", 0
 	smwgyImage			BYTE "images/smWGY.png", 0
@@ -61,3 +63,4 @@
 	yuhuaLocation			location <800, 500, 80, 23>			;10
 	mopiLocation			location <800, 550, 80, 23>			;11
 	saveLocation		location <100, 0, 80, 23>
+	yuantuLocation		location <200, 0, 80, 23>
