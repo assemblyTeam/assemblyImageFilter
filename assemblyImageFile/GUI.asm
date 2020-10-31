@@ -47,6 +47,7 @@ PUBLIC	ofn
 	menghuanStatus	DWORD 0
 	yuhuaStatus			DWORD 0
 	mopiStatus			DWORD 0
+	yuantuStatus			DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
@@ -110,6 +111,8 @@ PUBLIC	ofn
 	yuhuaHoverBtn	DD ?
 	mopiBtn	DD ?
 	mopiHoverBtn	DD ?
+	yuantuBtn	DD ?
+	yuantuHoverBtn	DD ?
 
 	curLocation			location <?>
 
@@ -269,6 +272,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE   LoadImageFromFile, OFFSET yuhuaHoverImage, ADDR yuhuaHoverBtn
 		INVOKE   LoadImageFromFile, OFFSET mopiImage, ADDR mopiBtn
 		INVOKE   LoadImageFromFile, OFFSET mopiHoverImage, ADDR mopiHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET yuantuImage, ADDR yuantuBtn
+		INVOKE   LoadImageFromFile, OFFSET yuantuHoverImage, ADDR yuantuHoverBtn
 
 		; 创建摄像头对象
 		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
@@ -425,6 +430,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, mopiBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
 			.ENDIF
+			.IF yuantuStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, yuantuBtn, yuantuLocation.x, yuantuLocation.y, 0, 0, yuantuLocation.w, yuantuLocation.h, 2
+			.ELSEIF yuantuStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, yuantuHoverBtn, yuantuLocation.x, yuantuLocation.y, 0, 0, yuantuLocation.w, yuantuLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, yuantuBtn, yuantuLocation.x, yuantuLocation.y, 0, 0, yuantuLocation.w, yuantuLocation.h, 2
+			.ENDIF
 
 		.ELSEIF interfaceID == 2
 			
@@ -441,7 +453,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSEIF backStatus == 1
 				INVOKE	GdipDrawImagePointRectI, graphics, backHoverBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
 			.ENDIF
-.IF saveStatus == 0
+			.IF saveStatus == 0
 				INVOKE	GdipDrawImagePointRectI, graphics, saveBtn, saveLocation.x, saveLocation.y, 0, 0, saveLocation.w, saveLocation.h, 2
 			.ELSEIF saveStatus == 1
 				INVOKE	GdipDrawImagePointRectI, graphics, saveHoverBtn, saveLocation.x, saveLocation.y, 0, 0, saveLocation.w, saveLocation.h, 2
@@ -526,6 +538,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, mopiBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
 			.ENDIF
+			.IF yuantuStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, yuantuBtn, yuantuLocation.x, yuantuLocation.y, 0, 0, yuantuLocation.w, yuantuLocation.h, 2
+			.ELSEIF yuantuStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, yuantuHoverBtn, yuantuLocation.x, yuantuLocation.y, 0, 0, yuantuLocation.w, yuantuLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, yuantuBtn, yuantuLocation.x, yuantuLocation.y, 0, 0, yuantuLocation.w, yuantuLocation.h, 2
+			.ENDIF
 
 		.ENDIF
 
@@ -567,6 +586,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, yuantuLocation, OFFSET yuantuStatus, 1
 
 		.ELSEIF interfaceID == 2
 
@@ -583,6 +603,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, yuantuLocation, OFFSET yuantuStatus, 1
 
 		.ENDIF
 
@@ -655,8 +676,9 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, menghuanLocation, OFFSET menghuanStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 2
-
 			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, yuantuLocation, OFFSET yuantuStatus, 2
+
 			; 鼠标位于back
 			mov eax, backStatus
 			.IF eax == 2
@@ -875,6 +897,16 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 			.ENDIF
 
+			; 鼠标位于yuantu
+			mov eax, yuantuStatus
+			.IF eax == 2
+				
+				; 切换状态
+				mov eax, 0
+				mov isFiltered, eax
+
+			.ENDIF
+
 		.ELSEIF interfaceID == 2
 
 			; 改变按钮状态
@@ -890,6 +922,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, menghuanLocation, OFFSET menghuanStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, yuantuLocation, OFFSET yuantuStatus, 2
 			
 			; 鼠标位于back
 			mov eax, backStatus
@@ -1048,6 +1081,19 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
 				call	releaseFunc
 				mov ebx, 11
+				mov cameraFilterType, ebx
+				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
+				mov		hThread, eax	; 获取进程句柄
+
+			.ENDIF
+
+			; 鼠标位于yuantu
+			mov eax, yuantuStatus
+			.IF eax == 2
+				
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 0
 				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
