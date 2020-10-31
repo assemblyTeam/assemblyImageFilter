@@ -449,6 +449,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			
 		; 释放内存
 		INVOKE	GdipDeleteGraphics, graphics
+		INVOKE	GdipDisposeImage, tmpImage
 		INVOKE	DeleteObject, pbitmap
 		INVOKE  DeleteDC, hMemDC
 		INVOKE  EndPaint, hWnd, ADDR ps
