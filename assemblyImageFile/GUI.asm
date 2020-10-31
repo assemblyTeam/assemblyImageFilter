@@ -35,8 +35,18 @@ PUBLIC	ofn
 	cameraStatus	DWORD 0
 	backStatus		DWORD 0
 	saveStatus		DWORD 0
-	exitStatus		DWORD 0
-	sumiaoStatus	DWORD 0
+	exitStatus			DWORD 0
+	sumiaoStatus		DWORD 0
+	fudiaoStatus			DWORD 0
+	maoboliStatus		DWORD 0
+	huaijiuStatus		DWORD 0
+	huiduStatus			DWORD 0
+	heduStatus			DWORD 0
+	danyaStatus			DWORD 0
+	geteStatus			DWORD 0
+	menghuanStatus	DWORD 0
+	yuhuaStatus			DWORD 0
+	mopiStatus			DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
@@ -79,6 +89,26 @@ PUBLIC	ofn
 	exitClickBtn		DD ?
 	sumiaoBtn	DD ?
 	sumiaoHoverBtn	DD ?
+	fudiaoBtn	DD ?
+	fudiaoHoverBtn	DD ?
+	maoboliBtn	DD ?
+	maoboliHoverBtn	DD ?
+	huaijiuBtn		DD ?
+	huaijiuHoverBtn	DD ?
+	huiduBtn	DD ?
+	huiduHoverBtn	DD ?
+	heduBtn	DD ?
+	heduHoverBtn	DD ?
+	danyaBtn	DD ?
+	danyaHoverBtn	DD ?
+	geteBtn	DD ?
+	geteHoverBtn	DD ?
+	menghuanBtn	DD ?
+	menghuanHoverBtn	DD ?
+	yuhuaBtn	DD ?
+	yuhuaHoverBtn	DD ?
+	mopiBtn	DD ?
+	mopiHoverBtn	DD ?
 
 	curLocation			location <?>
 
@@ -176,6 +206,26 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		releaseFunc, eax
 		INVOKE	GetProcAddress, OpenCV, OFFSET sumiaoFunction
 		mov		sumiaoFunc, eax		; 加载素描滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET fudiaoFunction
+		mov		fudiaoFunc, eax		; 加载浮雕滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET maoboliFunction
+		mov		maoboliFunc, eax		; 加载毛玻璃滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET huaijiuFunction
+		mov		huaijiuFunc, eax		; 加载怀旧滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET huiduFunction
+		mov		huiduFunc, eax			; 加载灰度滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET heduFunction
+		mov		heduFunc, eax			; 加载褐度滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET danyaFunction
+		mov		danyaFunc, eax		; 加载淡雅滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET geteFunction
+		mov		geteFunc, eax		; 加载哥特滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET menghuanFunction
+		mov		menghuanFunc, eax		; 加载梦幻滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET yuhuaFunction
+		mov		yuhuaFunc, eax		; 加载羽化滤镜函数
+		INVOKE	GetProcAddress, OpenCV, OFFSET mopiFunction
+		mov		mopiFunc, eax		; 加载磨皮滤镜函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET saveImageFunction
 		mov		saveImageFunc, eax
 
@@ -198,6 +248,26 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		;INVOKE	LoadImageFromFile, OFFSET backClickImage, ADDR backClickBtn
 		INVOKE   LoadImageFromFile, OFFSET sumiaoImage, ADDR sumiaoBtn
 		INVOKE   LoadImageFromFile, OFFSET sumiaoHoverImage, ADDR sumiaoHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET fudiaoImage, ADDR fudiaoBtn
+		INVOKE   LoadImageFromFile, OFFSET fudiaoHoverImage, ADDR fudiaoHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET maoboliImage, ADDR maoboliBtn
+		INVOKE   LoadImageFromFile, OFFSET maoboliHoverImage, ADDR maoboliHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET huaijiuImage, ADDR huaijiuBtn
+		INVOKE   LoadImageFromFile, OFFSET huaijiuHoverImage, ADDR huaijiuHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET huiduImage, ADDR huiduBtn
+		INVOKE   LoadImageFromFile, OFFSET huiduHoverImage, ADDR huiduHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET heduImage, ADDR heduBtn
+		INVOKE   LoadImageFromFile, OFFSET heduHoverImage, ADDR heduHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET danyaImage, ADDR danyaBtn
+		INVOKE   LoadImageFromFile, OFFSET danyaHoverImage, ADDR danyaHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET geteImage, ADDR geteBtn
+		INVOKE   LoadImageFromFile, OFFSET geteHoverImage, ADDR geteHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET menghuanImage, ADDR menghuanBtn
+		INVOKE   LoadImageFromFile, OFFSET menghuanHoverImage, ADDR menghuanHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET yuhuaImage, ADDR yuhuaBtn
+		INVOKE   LoadImageFromFile, OFFSET yuhuaHoverImage, ADDR yuhuaHoverBtn
+		INVOKE   LoadImageFromFile, OFFSET mopiImage, ADDR mopiBtn
+		INVOKE   LoadImageFromFile, OFFSET mopiHoverImage, ADDR mopiHoverBtn
 
 		; 创建摄像头对象
 		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
@@ -284,6 +354,76 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.ELSE
 				INVOKE	GdipDrawImagePointRectI, graphics, sumiaoBtn, sumiaoLocation.x, sumiaoLocation.y, 0, 0, sumiaoLocation.w, sumiaoLocation.h, 2
 			.ENDIF
+			.IF fudiaoStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, fudiaoBtn, fudiaoLocation.x, fudiaoLocation.y, 0, 0, fudiaoLocation.w, fudiaoLocation.h, 2
+			.ELSEIF fudiaoStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, fudiaoHoverBtn, fudiaoLocation.x, fudiaoLocation.y, 0, 0, fudiaoLocation.w, fudiaoLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, fudiaoBtn, fudiaoLocation.x, fudiaoLocation.y, 0, 0, fudiaoLocation.w, fudiaoLocation.h, 2
+			.ENDIF
+			.IF maoboliStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, maoboliBtn, maoboliLocation.x, maoboliLocation.y, 0, 0, maoboliLocation.w, maoboliLocation.h, 2
+			.ELSEIF maoboliStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, maoboliHoverBtn, maoboliLocation.x, maoboliLocation.y, 0, 0, maoboliLocation.w, maoboliLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, maoboliBtn, maoboliLocation.x, maoboliLocation.y, 0, 0, maoboliLocation.w, maoboliLocation.h, 2
+			.ENDIF
+			.IF huaijiuStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, huaijiuBtn, huaijiuLocation.x, huaijiuLocation.y, 0, 0, huaijiuLocation.w, huaijiuLocation.h, 2
+			.ELSEIF huaijiuStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, huaijiuHoverBtn, huaijiuLocation.x, huaijiuLocation.y, 0, 0, huaijiuLocation.w, huaijiuLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, huaijiuBtn, huaijiuLocation.x, huaijiuLocation.y, 0, 0, huaijiuLocation.w, huaijiuLocation.h, 2
+			.ENDIF
+			.IF huiduStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, huiduBtn, huiduLocation.x, huiduLocation.y, 0, 0, huiduLocation.w, huiduLocation.h, 2
+			.ELSEIF huiduStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, huiduHoverBtn, huiduLocation.x, huiduLocation.y, 0, 0, huiduLocation.w, huiduLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, huiduBtn, huiduLocation.x, huiduLocation.y, 0, 0, huiduLocation.w, huiduLocation.h, 2
+			.ENDIF
+			.IF heduStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, heduBtn, heduLocation.x, heduLocation.y, 0, 0, heduLocation.w, heduLocation.h, 2
+			.ELSEIF heduStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, heduHoverBtn, heduLocation.x, heduLocation.y, 0, 0, heduLocation.w, heduLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, heduBtn, heduLocation.x, heduLocation.y, 0, 0, heduLocation.w, heduLocation.h, 2
+			.ENDIF
+			.IF danyaStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, danyaBtn, danyaLocation.x, danyaLocation.y, 0, 0, danyaLocation.w, danyaLocation.h, 2
+			.ELSEIF danyaStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, danyaHoverBtn, danyaLocation.x, danyaLocation.y, 0, 0, danyaLocation.w, danyaLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, danyaBtn, danyaLocation.x, danyaLocation.y, 0, 0, danyaLocation.w, danyaLocation.h, 2
+			.ENDIF
+			.IF geteStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, geteBtn, geteLocation.x, geteLocation.y, 0, 0, geteLocation.w, geteLocation.h, 2
+			.ELSEIF geteStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, geteHoverBtn, geteLocation.x, geteLocation.y, 0, 0, geteLocation.w, geteLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, geteBtn, geteLocation.x, geteLocation.y, 0, 0, geteLocation.w, geteLocation.h, 2
+			.ENDIF
+			.IF menghuanStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, menghuanBtn, menghuanLocation.x, menghuanLocation.y, 0, 0, menghuanLocation.w, menghuanLocation.h, 2
+			.ELSEIF menghuanStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, menghuanHoverBtn, menghuanLocation.x, menghuanLocation.y, 0, 0, menghuanLocation.w, menghuanLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, menghuanBtn, menghuanLocation.x, menghuanLocation.y, 0, 0, menghuanLocation.w, menghuanLocation.h, 2
+			.ENDIF
+			.IF yuhuaStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, yuhuaBtn, yuhuaLocation.x, yuhuaLocation.y, 0, 0, yuhuaLocation.w, yuhuaLocation.h, 2
+			.ELSEIF yuhuaStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, yuhuaHoverBtn, yuhuaLocation.x, yuhuaLocation.y, 0, 0, yuhuaLocation.w, yuhuaLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, yuhuaBtn, yuhuaLocation.x, yuhuaLocation.y, 0, 0, yuhuaLocation.w, yuhuaLocation.h, 2
+			.ENDIF
+			.IF mopiStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, mopiBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
+			.ELSEIF mopiStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, mopiHoverBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
+			.ELSE
+				INVOKE	GdipDrawImagePointRectI, graphics, mopiBtn, mopiLocation.x, mopiLocation.y, 0, 0, mopiLocation.w, mopiLocation.h, 2
+			.ENDIF
 
 		.ELSEIF interfaceID == 2
 			
@@ -330,6 +470,16 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, sumiaoLocation, OFFSET sumiaoStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, fudiaoLocation, OFFSET fudiaoStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, maoboliLocation, OFFSET maoboliStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, huaijiuLocation, OFFSET huaijiuStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, huiduLocation, OFFSET huiduStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, heduLocation, OFFSET heduStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, danyaLocation, OFFSET danyaStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, geteLocation, OFFSET geteStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, menghuanLocation, OFFSET menghuanStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 1
 
 		.ELSEIF interfaceID == 2
@@ -397,6 +547,16 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 改变按钮状态
 			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, sumiaoLocation, OFFSET sumiaoStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, fudiaoLocation, OFFSET fudiaoStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, maoboliLocation, OFFSET maoboliStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, huaijiuLocation, OFFSET huaijiuStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, huiduLocation, OFFSET huiduStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, heduLocation, OFFSET heduStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, danyaLocation, OFFSET danyaStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, geteLocation, OFFSET geteStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, menghuanLocation, OFFSET menghuanStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, yuhuaLocation, OFFSET yuhuaStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, mopiLocation, OFFSET mopiStatus, 2
 
 			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 2
 			; 鼠标位于back
@@ -406,8 +566,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
+				; 切换图片状态
+				mov eax, 0
+				mov isFiltered, eax
 
 			.ENDIF
+
+			; 鼠标位于save
 			mov eax, saveStatus
 			.IF eax == 2
 				; todo
@@ -426,7 +591,187 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				call sumiaoFunc
 				pop eax
 				pop eax
-				; 切换状状态
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于fudiao
+			mov eax, fudiaoStatus
+			.IF eax == 2
+				
+				; 调用浮雕滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call fudiaoFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于maoboli
+			mov eax, maoboliStatus
+			.IF eax == 2
+				
+				; 调用毛玻璃滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call maoboliFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于huaijiu
+			mov eax, huaijiuStatus
+			.IF eax == 2
+				
+				; 调用怀旧滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call huaijiuFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于huidu
+			mov eax, huiduStatus
+			.IF eax == 2
+				
+				; 调用灰度滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call huiduFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于hedu
+			mov eax, heduStatus
+			.IF eax == 2
+				
+				; 调用褐度滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call heduFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于danya
+			mov eax, danyaStatus
+			.IF eax == 2
+				
+				; 调用淡雅滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call danyaFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于gete
+			mov eax, geteStatus
+			.IF eax == 2
+				
+				; 调用哥特滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call geteFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于menghuan
+			mov eax, menghuanStatus
+			.IF eax == 2
+				
+				; 调用梦幻滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call menghuanFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于yuhua
+			mov eax, yuhuaStatus
+			.IF eax == 2
+				
+				; 调用羽化滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call yuhuaFunc
+				pop eax
+				pop eax
+				; 切换状态
+				mov eax, 1
+				mov isFiltered, eax
+
+			.ENDIF
+
+			; 鼠标位于mopi
+			mov eax, mopiStatus
+			.IF eax == 2
+				
+				; 调用磨皮滤镜函数
+				mov ebx, OFFSET tmpFileName
+				mov edx, OFFSET szFileName
+				push ebx
+				push edx
+				call mopiFunc
+				pop eax
+				pop eax
+				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
 

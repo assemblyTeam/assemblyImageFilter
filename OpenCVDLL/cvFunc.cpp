@@ -1,60 +1,61 @@
 #include "cvFunc.h"
 
-//Ä¥Æ¤
+
+//ç£¨çš®
 void mopiImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
 
 	Mat dst;
-	int value1 = 3, value2 = 1;// Ä¥Æ¤³Ì¶ÈÓëÏ¸½Ú³Ì¶ÈµÄÈ·¶¨
-	int dx = value1 * 5; // Ë«±ßÂË²¨²ÎÊıÖ®Ò»
-	double fc = value1 * 12.5; // Ë«±ßÂË²¨²ÎÊıÖ®Ò»
-	double p = 0.1f; // Í¸Ã÷¶È
+	int value1 = 3, value2 = 1;// ç£¨çš®ç¨‹åº¦ä¸ç»†èŠ‚ç¨‹åº¦çš„ç¡®å®š
+	int dx = value1 * 5; // åŒè¾¹æ»¤æ³¢å‚æ•°ä¹‹ä¸€
+	double fc = value1 * 12.5; // åŒè¾¹æ»¤æ³¢å‚æ•°ä¹‹ä¸€
+	double p = 0.1f; // é€æ˜åº¦
 	Mat temp1;
 
-	// Ë«±ßÂË²¨
+	// åŒè¾¹æ»¤æ³¢
 	bilateralFilter(src, temp1, dx, fc, fc);
-	
-	
+
+
 	Mat temp22;
 	//temp2 = (temp1 - src + 128);
 	subtract(temp1, src, temp22);
-	
-	
+
+
 	// Core.subtract(temp22, new Scalar(128), temp2);
 	//Mat temp222(temp22.rows, temp22.cols, temp22.channels(), Scalar(10, 10, 10, 128));
 	//imwrite(outputPath, temp222);
-	
+
 	Mat temp2;
 	add(temp22, (128, 128, 128, 128), temp2);
-	
-	
-	// ¸ßË¹Ä£ºı
+
+
+	// é«˜æ–¯æ¨¡ç³Š
 	Mat temp3;
 	GaussianBlur(temp2, temp3, Size(2 * value2 - 1, 2 * value2 - 1), 0, 0);
-	
-	
+
+
 	// temp4 = image + 2 * temp3 - 255;
 	Mat temp44;
 	Mat temp4;
 	temp3.convertTo(temp44, temp3.type(), 2, -255);
-	
-	
+
+
 	add(src, temp44, temp4);
-	
+
 	// dst = (image*(100 - p) + temp4*p) / 100;
 	addWeighted(src, p, temp4, 1 - p, 0.0, dst);
-	
+
 	//Mat temp5(temp4.cols, temp4.rows, temp4.type(), Scalar(10, 10, 10));
 	add(dst, (10, 10, 10), dst);
 
 	imwrite(outputPath, dst);
-	
+
 	waitKey(0);
 
 }
 
-//Óğ»¯10
+//ç¾½åŒ–10
 void yuhuaImage(char* inputPath, char* outputPath)
 {
 	float mSize = 0.7;
@@ -115,7 +116,7 @@ void yuhuaImage(char* inputPath, char* outputPath)
 	waitKey(0);
 }
 
-//ÃÎ»Ã9
+//æ¢¦å¹»9
 void menghuanImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -146,12 +147,12 @@ void menghuanImage(char* inputPath, char* outputPath)
 			P1[3 * x + 2] = (uchar)newR;
 		}
 	}
-	//imshow("»³¾ÉÉ«", img);
+	//imshow("æ€€æ—§è‰²", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-//¸çÌØ8
+//å“¥ç‰¹8
 void geteImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -182,12 +183,12 @@ void geteImage(char* inputPath, char* outputPath)
 			P1[3 * x + 2] = (uchar)newR;
 		}
 	}
-	//imshow("»³¾ÉÉ«", img);
+	//imshow("æ€€æ—§è‰²", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-//µ­ÑÅ7
+//æ·¡é›…7
 void danyaImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -218,12 +219,12 @@ void danyaImage(char* inputPath, char* outputPath)
 			P1[3 * x + 2] = (uchar)newR;
 		}
 	}
-	//imshow("»³¾ÉÉ«", img);
+	//imshow("æ€€æ—§è‰²", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-//ºÖ¶È6
+//è¤åº¦6
 void heduImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -254,12 +255,12 @@ void heduImage(char* inputPath, char* outputPath)
 			P1[3 * x + 2] = (uchar)newR;
 		}
 	}
-	//imshow("»³¾ÉÉ«", img);
+	//imshow("æ€€æ—§è‰²", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-//»Ò¶È5
+//ç°åº¦5
 void huiduImage(char* inputPath, char* outputPath)   //self
 {
 	Mat src = imread(inputPath);
@@ -285,12 +286,12 @@ void huiduImage(char* inputPath, char* outputPath)   //self
 		}
 
 	}
-	//imshow("ºÚ°×", img);
+	//imshow("é»‘ç™½", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-//»³¾É4
+//æ€€æ—§4
 void huaijiuImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -321,12 +322,12 @@ void huaijiuImage(char* inputPath, char* outputPath)
 			P1[3 * x + 2] = (uchar)newR;
 		}
 	}
-	//imshow("»³¾ÉÉ«", img);
+	//imshow("æ€€æ—§è‰²", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-//Ã«²£Á§3
+//æ¯›ç»ç’ƒ3
 void maoboliImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -347,12 +348,12 @@ void maoboliImage(char* inputPath, char* outputPath)
 		}
 
 	}
-	//imshow("À©É¢", img);
+	//imshow("æ‰©æ•£", img);
 	imwrite(outputPath, img);
 	waitKey(0);
 }
 
-//¸¡µñ2
+//æµ®é›•2
 void fudiaoImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -368,7 +369,7 @@ void fudiaoImage(char* inputPath, char* outputPath)
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;//¸¡µñ
+				int tmp0 = p1[3 * (x + 1) + i] - p0[3 * (x - 1) + i] + 128;//æµ®é›•
 				if (tmp0 < 0)
 					q0[3 * x + i] = 0;
 				else if (tmp0 > 255)
@@ -380,12 +381,12 @@ void fudiaoImage(char* inputPath, char* outputPath)
 	}
 	imwrite(outputPath, img);
 	//imshow("src", src);
-	//imshow("¸¡µñ", img);
+	//imshow("æµ®é›•", img);
 	waitKey(0);
 
 }
 
-//ËØÃè1
+//ç´ æ1
 void sumiaoImage(char* inputPath, char* outputPath)
 {
 	Mat src = imread(inputPath);
@@ -393,14 +394,14 @@ void sumiaoImage(char* inputPath, char* outputPath)
 	int heigh = src.rows;
 	Mat gray0, gray1;
 	//imshow("src", src);
-	//È¥É«
+	//å»è‰²
 	cvtColor(src, gray0, CV_BGR2GRAY);
-	//·´É«
+	//åè‰²
 	addWeighted(gray0, -1, NULL, 0, 255, gray1);
-	//¸ßË¹Ä£ºı,¸ßË¹ºËµÄSizeÓë×îºóµÄĞ§¹ûÓĞ¹Ø
+	//é«˜æ–¯æ¨¡ç³Š,é«˜æ–¯æ ¸çš„Sizeä¸æœ€åçš„æ•ˆæœæœ‰å…³
 	GaussianBlur(gray1, gray1, Size(11, 11), 0);
 
-	//ÈÚºÏ£ºÑÕÉ«¼õµ­
+	//èåˆï¼šé¢œè‰²å‡æ·¡
 	Mat img(gray1.size(), CV_8UC1);
 	for (int y = 0; y < heigh; y++)
 	{
@@ -417,7 +418,7 @@ void sumiaoImage(char* inputPath, char* outputPath)
 
 	}
 	imwrite(outputPath, img);
-	//imshow("ËØÃè", img);
+	//imshow("ç´ æ", img);
 	waitKey(0);
 }
 
@@ -479,8 +480,5 @@ void saveImage(char* inputPath, char* outputPath)
 
 /*int main()
 {
-	char p1[] = "D:/test6.jpg";
-	char p2[] = "D:/111.jpg";
-	mopiImage(p1, p2);
 	return 0;
 }*/

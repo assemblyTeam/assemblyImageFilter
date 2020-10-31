@@ -13,8 +13,28 @@
 	exportHoverImage	BYTE "images/start_hover.png", 0
 	exitImage			BYTE "images/exit.png", 0
 	exitHoverImage		BYTE "images/exit_hover.png", 0
-	sumiaoImage	BYTE "images/start.png", 0
+	sumiaoImage	BYTE "images/start.png", 0								;1
 	sumiaoHoverImage	BYTE "images/start_hover.png", 0
+	fudiaoImage	    BYTE "images/start.png", 0								;2
+	fudiaoHoverImage	BYTE "images/start_hover.png", 0
+	maoboliImage	BYTE "images/start.png", 0								;3
+	maoboliHoverImage	BYTE "images/start_hover.png", 0
+	huaijiuImage	BYTE "images/start.png", 0								;4
+	huaijiuHoverImage	BYTE "images/start_hover.png", 0
+	huiduImage	BYTE "images/start.png", 0									;5
+	huiduHoverImage	BYTE "images/start_hover.png", 0
+	heduImage	BYTE "images/start.png", 0									;6
+	heduHoverImage	BYTE "images/start_hover.png", 0
+	danyaImage	BYTE "images/start.png", 0									;7
+	danyaHoverImage	BYTE "images/start_hover.png", 0
+	geteImage	BYTE "images/start.png", 0									;8
+	geteHoverImage	BYTE "images/start_hover.png", 0
+	menghuanImage	BYTE "images/start.png", 0							;9
+	menghuanHoverImage	BYTE "images/start_hover.png", 0
+	yuhuaImage	BYTE "images/start.png", 0									;10
+	yuhuaHoverImage	BYTE "images/start_hover.png", 0
+	mopiImage	BYTE "images/start.png", 0									;11
+	mopiHoverImage	BYTE "images/start_hover.png", 0
 
 	wgyImage			BYTE "images/WGY.png", 0
 	smwgyImage			BYTE "images/smWGY.png", 0
@@ -29,5 +49,15 @@
 	cameraLocation		location <300, 100, 80, 23>
 	backLocation		location <0, 0, 80, 23>
 	exitLocation		location <500, 100, 80, 23>
-	sumiaoLocation	location <800, 50, 80, 23>
+	sumiaoLocation		location <800, 50, 80, 23>			;1
+	fudiaoLocation			location <800, 100, 80, 23>			;2
+	maoboliLocation		location <800, 150, 80, 23>			;3
+	huaijiuLocation			location <800, 200, 80, 23>			;4
+	huiduLocation			location <800, 250, 80, 23>			;5
+	heduLocation			location <800, 300, 80, 23>			;6
+	danyaLocation			location <800, 350, 80, 23>			;7
+	geteLocation			location <800, 400, 80, 23>			;8
+	menghuanLocation	location <800, 450, 80, 23>			;9
+	yuhuaLocation			location <800, 500, 80, 23>			;10
+	mopiLocation			location <800, 550, 80, 23>			;11
 	saveLocation		location <100, 0, 80, 23>
