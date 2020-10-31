@@ -9,8 +9,11 @@ INCLUDE		images.inc
 INCLUDE		dll.inc
 
 ;==================== FUNCTION =======================
+	rand					PROTO C
 	printf					PROTO C :ptr sbyte, :VARARG
 
+	RandStr					PROTO
+	DeleteTmpImage			PROTO
 	cameraThread			PROTO
 
 	WinMain					PROTO :DWORD, :DWORD, :DWORD, :DWORD
@@ -35,15 +38,15 @@ PUBLIC	ofn
 	cameraStatus	DWORD 0
 	backStatus		DWORD 0
 	saveStatus		DWORD 0
-	exitStatus			DWORD 0
-	sumiaoStatus		DWORD 0
-	fudiaoStatus			DWORD 0
-	maoboliStatus		DWORD 0
-	huaijiuStatus		DWORD 0
-	huiduStatus			DWORD 0
-	heduStatus			DWORD 0
-	danyaStatus			DWORD 0
-	geteStatus			DWORD 0
+	exitStatus		DWORD 0
+	sumiaoStatus	DWORD 0
+	fudiaoStatus	DWORD 0
+	maoboliStatus	DWORD 0
+	huaijiuStatus	DWORD 0
+	huiduStatus		DWORD 0
+	heduStatus		DWORD 0
+	danyaStatus		DWORD 0
+	geteStatus		DWORD 0
 	menghuanStatus	DWORD 0
 	yuhuaStatus			DWORD 0
 	mopiStatus			DWORD 0
@@ -52,8 +55,8 @@ PUBLIC	ofn
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
 
-	tmpFileName	BYTE "img_tmp.png", 0 	; 临时文件
-	isFiltered	DWORD 0								; 是否否添加过滤镜
+	tmpFileName		BYTE 256 DUP(0) 	; 临时文件
+	isFiltered		DWORD 0				; 是否否添加过滤镜
 	cameraFilterType		DWORD 0
 
 	;初始化gdi+对象
@@ -73,7 +76,7 @@ PUBLIC	ofn
 
 	background			DD ?
 	szImage				DD ?
-	tmpImage				DD ?
+	tmpImage			DD ?
 	frame				DD ?
 	emptyBtn			DD ?
 	openBtn				DD ?
@@ -85,27 +88,27 @@ PUBLIC	ofn
 	backBtn				DD ?
 	backHoverBtn		DD ?
 	saveBtn				DD ?
-	saveHoverBtn	DD ?
+	saveHoverBtn		DD ?
 	exitBtn				DD ?
 	exitHoverBtn		DD ?
 	exitClickBtn		DD ?
-	sumiaoBtn	DD ?
-	sumiaoHoverBtn	DD ?
-	fudiaoBtn	DD ?
-	fudiaoHoverBtn	DD ?
-	maoboliBtn	DD ?
-	maoboliHoverBtn	DD ?
-	huaijiuBtn		DD ?
-	huaijiuHoverBtn	DD ?
-	huiduBtn	DD ?
-	huiduHoverBtn	DD ?
-	heduBtn	DD ?
-	heduHoverBtn	DD ?
-	danyaBtn	DD ?
-	danyaHoverBtn	DD ?
-	geteBtn	DD ?
-	geteHoverBtn	DD ?
-	menghuanBtn	DD ?
+	sumiaoBtn			DD ?
+	sumiaoHoverBtn		DD ?
+	fudiaoBtn			DD ?
+	fudiaoHoverBtn		DD ?
+	maoboliBtn			DD ?
+	maoboliHoverBtn		DD ?
+	huaijiuBtn			DD ?
+	huaijiuHoverBtn		DD ?
+	huiduBtn			DD ?
+	huiduHoverBtn		DD ?
+	heduBtn				DD ?
+	heduHoverBtn		DD ?
+	danyaBtn			DD ?
+	danyaHoverBtn		DD ?
+	geteBtn				DD ?
+	geteHoverBtn		DD ?
+	menghuanBtn			DD ?
 	menghuanHoverBtn	DD ?
 	yuhuaBtn	DD ?
 	yuhuaHoverBtn	DD ?
@@ -117,7 +120,7 @@ PUBLIC	ofn
 	curLocation			location <?>
 
 	ofn					OPENFILENAME <0>
-	save_ofn		OPENFILENAME <0>
+	save_ofn			OPENFILENAME <0>
 	szFileName			BYTE 256 DUP(0)
 	testMsg				BYTE '这是测试信息', 0
 	testTitle			BYTE '这是测试', 0
@@ -126,9 +129,9 @@ PUBLIC	ofn
 	szTitle				DB '请选择择图片', 0 ; 对话框标题
 	szMessageTitle		DB '你选择择的文件是', 0
 	saveFileName		BYTE 256 DUP(0)
-	currentWorkDir	BYTE 256 DUP(0)
-	szWidth		DD ?
-	szHeight	DD ?
+	currentWorkDir		BYTE 256 DUP(0)
+	szWidth				DD ?
+	szHeight			DD ?
 
 	cameraThreadID		DD ?
 
@@ -198,7 +201,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		; 打开计时器
 		INVOKE	SetTimer, hWnd, 1, 10, NULL
-		
 		
 		INVOKE	LoadLibrary, OFFSET OpenCVDLL
 		mov		OpenCV, eax			; 加载DLL
@@ -552,6 +554,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			
 		; 释放内存
 		INVOKE	GdipDeleteGraphics, graphics
+		INVOKE	GdipDisposeImage, tmpImage
 		INVOKE	DeleteObject, pbitmap
 		INVOKE  DeleteDC, hMemDC
 		INVOKE  EndPaint, hWnd, ADDR ps
@@ -683,6 +686,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, backStatus
 			.IF eax == 2
 				
+				; 清空缓存
+				INVOKE	DeleteTmpImage
 				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
@@ -702,6 +707,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于sumiao
 			mov eax, sumiaoStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用素描滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -720,6 +729,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于fudiao
 			mov eax, fudiaoStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用浮雕滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -738,6 +751,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于maoboli
 			mov eax, maoboliStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用毛玻璃滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -756,6 +773,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于huaijiu
 			mov eax, huaijiuStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用怀旧滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -774,6 +795,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于huidu
 			mov eax, huiduStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用灰度滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -792,6 +817,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于hedu
 			mov eax, heduStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用褐度滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -810,6 +839,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于danya
 			mov eax, danyaStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用淡雅滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -828,6 +861,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于gete
 			mov eax, geteStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用哥特滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -846,6 +883,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于menghuan
 			mov eax, menghuanStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用梦幻滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -864,6 +905,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于yuhua
 			mov eax, yuhuaStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用羽化滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -882,6 +927,10 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于mopi
 			mov eax, mopiStatus
 			.IF eax == 2
+
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
 				
 				; 调用磨皮滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -1224,4 +1273,85 @@ SaveImg	PROC	USES esi edi ecx
 	.ENDIF
 	ret
 SaveImg ENDP
+
+;-----------------------------------------------------
+DeleteTmpImage	PROC	USES esi edi ecx
+; 删除滤镜过程中出现的临时图
+;-----------------------------------------------------
+	mov esi, OFFSET szFileName
+	mov edi, OFFSET tmp_Image
+	mov eax, [esi]
+	L1:
+		mov ebx, [esi]
+		mov [edi], ebx
+		add esi, 1
+		add edi, 1
+		mov eax, [esi]
+		cmp eax, 0
+		jne L1
+	sub edi, 1
+	mov eax, [edi]
+
+	L2:
+		mov eax, 0
+		mov [edi], eax
+		sub edi, 1
+		mov eax, [edi]
+		cmp eax, '\'
+		jne L2
+	add edi, 1
+
+	mov esi, OFFSET tmpFileName
+	mov eax, [esi]
+	L3:
+		mov ebx, [esi]
+		mov [edi], ebx
+		add esi, 1
+		add edi, 1
+		mov eax, [esi]
+		cmp eax, 0
+		jne L3
+	
+	;INVOKE MessageBoxA, NULL, addr tmpFileName, addr szTitle, NULL
+	;INVOKE MessageBoxA, NULL, addr tmp_Image, addr szTitle, NULL
+	INVOKE DeleteFile, addr tmp_Image
+	ret
+DeleteTmpImage ENDP
+
+;-----------------------------------------------------
+RandStr	PROC
+; 将tmpFileName置为随机字符串
+;-----------------------------------------------------
+	mov		esi, OFFSET tmpFileName
+	xor		ebx, ebx
+	mov		ecx, 10
+L1:
+	push	ecx
+	;mov		ah, 00h
+	;int		1ah
+	;mov		ax, dx
+	INVOKE	rand
+	xor		dx, dx
+	mov		cx, 10
+	div		cx
+	add		dl, '0'
+	
+	mov		BYTE PTR [esi + ebx], dl
+	add		ebx, 1
+	pop		ecx
+	Loop	L1
+
+	mov     edi, OFFSET pngType
+	xor     edx, edx
+L2:
+	mov		cl, BYTE PTR [edi + edx]
+	mov		[esi + ebx], cl
+	add		edx, 1
+	add		ebx, 1
+	test    cl, cl
+	jnz		L2
+
+	ret
+RandStr	ENDP
+
 END START

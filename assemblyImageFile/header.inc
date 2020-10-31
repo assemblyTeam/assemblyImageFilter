@@ -15,4 +15,4 @@ INCLUDELIB	kernel32.lib
 INCLUDELIB	gdiplus.lib
 INCLUDELIB	ole32.lib
 INCLUDELIB	msvcrt.lib
-INCLUDELIB　comdlg32.lib
+INCLUDELIB	comdlg32.lib
