@@ -53,6 +53,7 @@ PUBLIC	ofn
 
 	tmpFileName	BYTE "img_tmp.png", 0 	; 临时文件
 	isFiltered	DWORD 0								; 是否否添加过滤镜
+	cameraFilterType		DWORD 0
 
 	;初始化gdi+对象
 	gdiplusToken	DD ?
@@ -914,11 +915,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, sumiaoStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 1
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -926,11 +928,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, fudiaoStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 2
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -938,11 +941,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, maoboliStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 3
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -950,11 +954,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, huaijiuStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 4
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -962,11 +967,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, huiduStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 5
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -974,11 +980,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, heduStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 6
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -986,11 +993,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, danyaStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 7
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -998,11 +1006,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, geteStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 8
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -1010,11 +1019,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, menghuanStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 9
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -1022,11 +1032,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, yuhuaStatus
 			.IF eax == 2
 			
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 10
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -1034,11 +1045,12 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, mopiStatus
 			.IF eax == 2
 				
-				; 创建打开摄像头的进程
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, 11
+				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
-				;INVOKE  CreateThread, NULL, 0, OFFSET cameraFunc, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
-				;INVOKE  CloseHandle, eax
 
 			.ENDIF
 
@@ -1069,7 +1081,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 WndProc	ENDP
 
 cameraThread	PROC
-	push 0
+	mov ebx, cameraFilterType
+	push ebx
 	call cameraFunc
 	pop eax
 	mov eax, 233

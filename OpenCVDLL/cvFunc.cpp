@@ -837,47 +837,47 @@ void openCamera(int filterType)
 		{
 			imshow(winName, frame);
 		}
-		if (filterType == 1)
+		else if (filterType == 1)
 		{
 			imshow(winName, sumiaoImage(frame));
 		}
-		if (filterType == 2)
+		else if (filterType == 2)
 		{
 			imshow(winName, fudiaoImage(frame));
 		}
-		if (filterType == 3)
+		else if (filterType == 3)
 		{
 			imshow(winName, maoboliImage(frame));
 		}
-		if (filterType == 4)
+		else if (filterType == 4)
 		{
 			imshow(winName, huaijiuImage(frame));
 		}
-		if (filterType == 5)
+		else if (filterType == 5)
 		{
 			imshow(winName, huiduImage(frame));
 		}
-		if (filterType == 6)
+		else if (filterType == 6)
 		{
 			imshow(winName, heduImage(frame));
 		}
-		if (filterType == 7)
+		else if (filterType == 7)
 		{
 			imshow(winName, danyaImage(frame));
 		}
-		if (filterType == 8)
+		else if (filterType == 8)
 		{
 			imshow(winName, geteImage(frame));
 		}
-		if (filterType == 9)
+		else if (filterType == 9)
 		{
 			imshow(winName, menghuanImage(frame));
 		}
-		if (filterType == 10)
+		else if (filterType == 10)
 		{
 			imshow(winName, yuhuaImage(frame));
 		}
-		if (filterType == 11)
+		else if (filterType == 11)
 		{
 			imshow(winName, mopiImage(frame));
 		}
