@@ -63,6 +63,20 @@ PUBLIC	ofn
 	gdiplusToken	DD ?
 	gdiplusSInput	GdiplusStartupInput <1, NULL, FALSE, FALSE>
 
+	ofn					OPENFILENAME <0>
+	save_ofn			OPENFILENAME <0>
+	szFileName			BYTE 256 DUP(0)
+	testMsg				BYTE '这是测试信息', 0
+	testTitle			BYTE '这是测试', 0
+	szFilterString		DB 'Image(.png,.jpg)', 0, '*.png;*.jpg', 0, 0	; 文件过滤
+	szInitialDir		DB './', 0 ; 初始目录
+	szTitle				DB '请选择图片', 0 ; 对话框标题
+	szMessageTitle		DB '你选择的文件是', 0
+	saveFileName		BYTE 256 DUP(0)
+	currentWorkDir		BYTE 256 DUP(0)
+	szWidth				DD ?
+	szHeight			DD ?
+
 .data?
 	hInstance           DD ?
 	hBitmap             DD ?
@@ -118,20 +132,6 @@ PUBLIC	ofn
 	yuantuHoverBtn	DD ?
 
 	curLocation			location <?>
-
-	ofn					OPENFILENAME <0>
-	save_ofn			OPENFILENAME <0>
-	szFileName			BYTE 256 DUP(0)
-	testMsg				BYTE '这是测试信息', 0
-	testTitle			BYTE '这是测试', 0
-	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
-	szInitialDir		DB './', 0 ; 初始目录
-	szTitle				DB '请选择择图片', 0 ; 对话框标题
-	szMessageTitle		DB '你选择择的文件是', 0
-	saveFileName		BYTE 256 DUP(0)
-	currentWorkDir		BYTE 256 DUP(0)
-	szWidth				DD ?
-	szHeight			DD ?
 
 	cameraThreadID		DD ?
 
@@ -234,6 +234,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		mopiFunc, eax		; 加载磨皮滤镜函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET saveImageFunction
 		mov		saveImageFunc, eax
+		INVOKE	GetProcAddress, OpenCV, OFFSET compressFunction
+		mov		compressFunc, eax
 
 		; 加载文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background
@@ -328,6 +330,15 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 检测当前是否加过滤镜
 			.IF isFiltered == 0
 				INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
+				INVOKE	GdipGetImageWidth, szImage, OFFSET szWidth
+				INVOKE	GdipGetImageHeight, szImage, OFFSET szHeight
+				mov esi, OFFSET compressFileName
+				push esi
+				mov	esi, OFFSET szFileName
+				push	esi
+				CALL compressFunc
+				pop esi
+				pop esi
 				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
 			.ELSE
 				INVOKE	LoadImageFromFile, OFFSET tmpFileName, ADDR tmpImage

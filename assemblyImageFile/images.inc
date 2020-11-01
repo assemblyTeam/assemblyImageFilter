@@ -41,6 +41,7 @@
 	wgyImage			BYTE "images/WGY.png", 0
 	smwgyImage			BYTE "images/smWGY.png", 0
 	tmp_Image			BYTE 256 DUP(0)
+	compressFileName	BYTE "compressed.png", 0
 	frameImage			BYTE "images/Video.png", 0
 
 	pngType				BYTE ".png", 0

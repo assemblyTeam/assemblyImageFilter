@@ -16,6 +16,7 @@
 	releaseFunction	BYTE "releaseCamera", 0
 	frameFunction	BYTE "captureFrame", 0
 	saveImageFunction	BYTE "saveImage", 0
+	compressFunction	BYTE "compressImg", 0
 
 .data?
 	OpenCV			HANDLE ?
@@ -34,3 +35,4 @@
 	menghuanFunc	DD ?
 	yuhuaFunc		DD ?
 	mopiFunc		DD ?
+	compressFunc	DD ?

@@ -33,4 +33,5 @@ extern "C" __declspec(dllexport) void releaseCamera();
 extern "C" __declspec(dllexport) void openCamera(int);
 extern "C" __declspec(dllexport) void captureFrame(int);
 extern "C" __declspec(dllexport) void saveImage(char*, char*);
+extern "C" __declspec(dllexport) void compressImg(char*, char*);
 #endif
