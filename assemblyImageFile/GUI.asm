@@ -175,6 +175,9 @@ PUBLIC	ofn
 
 	cameraThreadID		DD ?
 
+	imgWidth			DWORD ?
+	imgHeight		DWORD ?
+
 ;=================== CODE =========================
 .code
 START:
@@ -208,7 +211,7 @@ WinMain PROC hInst:DWORD, hPrevInst:DWORD, CmdLine:DWORD, CmdShow:DWORD
 
 	INVOKE RegisterClassEx, ADDR wc
 	INVOKE CreateWindowEx, NULL, ADDR szClassName, ADDR WindowName, 
-		WS_OVERLAPPEDWINDOW, 300, 40, 1024, 768, NULL, NULL, hInst, NULL
+		WS_OVERLAPPEDWINDOW, 300, 40, 1040, 807, NULL, NULL, hInst, NULL
 	mov hWnd, eax
 	INVOKE ShowWindow, hWnd, SW_SHOWNORMAL
 	INVOKE UpdateWindow, hWnd
@@ -342,10 +345,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE   LoadImageFromFile, OFFSET mopi2Image, ADDR mopi2Btn
 		INVOKE   LoadImageFromFile, OFFSET mopi2HoverImage, ADDR mopi2HoverBtn
 
-		; 创建摄像头对象
-		;INVOKE	CreateEvent, NULL, FALSE, FALSE, NULL
-		;mov		hEvent, eax
-
 	.ELSEIF uMsg == WM_PAINT
 
 		INVOKE  BeginPaint, hWnd, ADDR ps
@@ -395,13 +394,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		
 			; 检测当前是否加过滤镜
 			.IF isFiltered == 0
-				;INVOKE	GdipGetImageWidth, szImage, OFFSET szWidth
-				;INVOKE	GdipGetImageHeight, szImage, OFFSET szHeight
 				INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR szImage
-				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 100, 50, 0, 0, 1024, 768, 2
+				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 55, 80, 0, 0, 800, 600, 2
 			.ELSE
 				INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR tmpImage
-				INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 100, 50, 0, 0, 1024, 768, 2
+				INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 55, 80, 0, 0, 800, 600, 2
 			.ENDIF
 
 			; 绘制按钮
@@ -1088,8 +1085,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 杀死摄像头线程
 				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
 				call	releaseFunc
-				;INVOKE  GetExitCodeThread, hThread, ADDR cameraThreadID
-				;INVOKE  SuspendThread, hThread
 			.ENDIF
 
 			; 鼠标位于save
