@@ -1,12 +1,12 @@
 ;==================== IMAGES =======================
 .data
-	;背景图
+	;背景�?
 	bkImage							BYTE "images/bg.png", 0
 	bgImgImage					BYTE "images/bg_img.png", 0
 	bgCameraImage				BYTE "images/bg_camera.png", 0
 
 	;按钮
-	;一般按钮
+	;一�?按钮
 	openImage						BYTE "images/start.png", 0
 	openHoverImage				BYTE "images/start_hover.png", 0
 	cameraImage					BYTE "images/camera.png", 0
@@ -31,19 +31,19 @@
 	sumiao2Image					BYTE "images/sumiao2.png", 0
 	sumiao2HoverImage		BYTE "images/sumiao2_hover.png", 0
 
-	;浮雕2
+	;�?�?2
 	fudiao1Image					BYTE "images/fudiao1.png", 0
 	fudiao1HoverImage			BYTE "images/fudiao1_hover.png", 0
 	fudiao2Image					BYTE "images/fudiao2.png", 0
 	fudiao2HoverImage			BYTE "images/fudiao2_hover.png", 0
 
-	;毛玻璃3
+	;毛玻�?3
 	maoboli1Image				BYTE "images/maoboli1.png", 0
 	maoboli1HoverImage		BYTE "images/maoboli1_hover.png", 0
 	maoboli2Image				BYTE "images/maoboli2.png", 0
 	maoboli2HoverImage		BYTE "images/maoboli2_hover.png", 0
 
-	;怀旧4
+	;怀�?4
 	huaijiu1Image					BYTE "images/huaijiu1.png", 0	
 	huaijiu1HoverImage			BYTE "images/huaijiu1_hover.png", 0	
 	huaijiu2Image					BYTE "images/huaijiu2.png", 0	
@@ -92,6 +92,8 @@
 	mopi2HoverImage			BYTE "images/mopi2_hover.png", 0
 
 	tmp_Image						BYTE 256 DUP(0)
+	compressFileName		BYTE "compressed.png", 0
+	absoluteCompressFileName	BYTE 256 DUP(0)
 	frameImage						BYTE "images/Video.png", 0
 
 	pngType							BYTE ".png", 0

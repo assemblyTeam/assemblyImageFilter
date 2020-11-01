@@ -913,6 +913,71 @@ void saveImage(char* inputPath, char* outputPath)
 	imwrite(outputPath, src);
 }
 
+struct object_rect {
+	int x;
+	int y;
+	int width;
+	int height;
+};
+
+int resize_uniform(Mat &src, Mat &dst, Size dst_size, object_rect &effect_area)
+{
+	int w = src.cols;
+	int h = src.rows;
+	int dst_w = dst_size.width;
+	int dst_h = dst_size.height;
+	dst = Mat(Size(dst_w, dst_h), CV_8UC3, Scalar(255,255,255));
+
+	float ratio_src = w*1.0 / h;
+	float ratio_dst = dst_w*1.0 / dst_h;
+
+	int tmp_w=0;
+	int tmp_h=0;
+	if (ratio_src > ratio_dst) {
+			tmp_w = dst_w;
+			tmp_h = floor((dst_w*1.0 / w) * h);
+	} else if (ratio_src < ratio_dst){
+			tmp_h = dst_h;
+			tmp_w = floor((dst_h*1.0 / h) * w);
+	} else {
+			resize(src, dst, dst_size);
+			effect_area.x = 0;
+			effect_area.y = 0;
+			effect_area.width = dst_w;
+			effect_area.height = dst_h;
+			return 0;
+	}
+	
+	Mat tmp;
+	resize(src, tmp, Size(tmp_w, tmp_h));
+
+	if (tmp_w != dst_w) { //高对齐，宽没对齐
+			int index_w = floor((dst_w - tmp_w) / 2.0);
+			for (int i=0; i<dst_h; i++) {
+					memcpy(dst.data+i*dst_w*3 + index_w*3, tmp.data+i*tmp_w*3, tmp_w*3);
+			}
+			effect_area.x = index_w;
+			effect_area.y = 0;
+	} else if (tmp_h != dst_h) { //宽对齐， 高没有对齐
+			int index_h = floor((dst_h - tmp_h) / 2.0);
+			memcpy(dst.data+index_h*dst_w*3, tmp.data, tmp_w*tmp_h*3);
+			effect_area.x = 0;
+			effect_area.y = index_h;
+	}
+	effect_area.width = tmp_w;
+	effect_area.height = tmp_h;
+	return 0;
+}
+
+void compressImg(char* inputPath, char* outputPath)
+{
+	Mat src = imread(inputPath);
+	object_rect effect_area;
+	Mat dst;
+	resize_uniform(src, dst, Size(800, 600), effect_area);
+	imwrite(outputPath, dst);
+}
+
 /*int main()
 {
 	return 0;

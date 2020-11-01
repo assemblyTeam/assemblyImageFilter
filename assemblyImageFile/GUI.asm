@@ -14,6 +14,8 @@ INCLUDE		dll.inc
 
 	RandStr					PROTO
 	DeleteTmpImage			PROTO
+	DeleteCompressImage	PROTO
+	Regular2Absolute	PROTO	:DWORD, :DWORD, :DWORD
 	cameraThread			PROTO
 
 	WinMain					PROTO :DWORD, :DWORD, :DWORD, :DWORD
@@ -75,6 +77,20 @@ PUBLIC	ofn
 	;初始化gdi+对象
 	gdiplusToken	DD ?
 	gdiplusSInput	GdiplusStartupInput <1, NULL, FALSE, FALSE>
+
+	ofn					OPENFILENAME <0>
+	save_ofn			OPENFILENAME <0>
+	szFileName			BYTE 256 DUP(0)
+	testMsg				BYTE '这是测试信息', 0
+	testTitle			BYTE '这是测试', 0
+	szFilterString		DB 'Image(.png,.jpg)', 0, '*.png;*.jpg', 0, 0	; 文件过滤
+	szInitialDir		DB './', 0 ; 初始目录
+	szTitle				DB '请选择图片', 0 ; 对话框标题
+	szMessageTitle		DB '你选择的文件是', 0
+	saveFileName		BYTE 256 DUP(0)
+	currentWorkDir		BYTE 256 DUP(0)
+	szWidth				DD ?
+	szHeight			DD ?
 
 .data?
 	hInstance           DD ?
@@ -155,20 +171,6 @@ PUBLIC	ofn
 	mopi2HoverBtn			DD ?
 
 	curLocation			location <?>
-
-	ofn					OPENFILENAME <0>
-	save_ofn			OPENFILENAME <0>
-	szFileName			BYTE 256 DUP(0)
-	testMsg				BYTE '这是测试信息', 0
-	testTitle			BYTE '这是测试', 0
-	szFilterString		DB '图片文件', 0, '*.png;*.jpg', 0, 0	; 文件过滤
-	szInitialDir		DB './', 0 ; 初始目录
-	szTitle				DB '请选择择图片', 0 ; 对话框标题
-	szMessageTitle		DB '你选择择的文件是', 0
-	saveFileName		BYTE 256 DUP(0)
-	currentWorkDir		BYTE 256 DUP(0)
-	szWidth				DD ?
-	szHeight			DD ?
 
 	cameraThreadID		DD ?
 
@@ -271,6 +273,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		mov		mopiFunc, eax				; 加载磨皮滤镜函数
 		INVOKE	GetProcAddress, OpenCV, OFFSET saveImageFunction
 		mov		saveImageFunc, eax
+		INVOKE	GetProcAddress, OpenCV, OFFSET compressFunction
+		mov		compressFunc, eax
 
 		; 加载文件中的图像
 		INVOKE	LoadImageFromFile, OFFSET bkImage, ADDR background0
@@ -390,11 +394,13 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		
 			; 检测当前是否加过滤镜
 			.IF isFiltered == 0
-				INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
-				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
+				;INVOKE	GdipGetImageWidth, szImage, OFFSET szWidth
+				;INVOKE	GdipGetImageHeight, szImage, OFFSET szHeight
+				INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR szImage
+				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 100, 50, 0, 0, 1024, 768, 2
 			.ELSE
-				INVOKE	LoadImageFromFile, OFFSET tmpFileName, ADDR tmpImage
-				INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 0, 0, 0, 0, 1024, 768, 2
+				INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR tmpImage
+				INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 100, 50, 0, 0, 1024, 768, 2
 			.ENDIF
 
 			; 绘制按钮
@@ -609,6 +615,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		; 释放内存
 		INVOKE	GdipDeleteGraphics, graphics
 		INVOKE	GdipDisposeImage, tmpImage
+		INVOKE	GdipDisposeImage, szImage
 		INVOKE	DeleteObject, pbitmap
 		INVOKE	DeleteDC, hMemDC
 		INVOKE	EndPaint, hWnd, ADDR ps
@@ -695,6 +702,14 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 					; 更改按键初始值
 					mov edx, 0
 					mov backStatus, edx
+					; 压缩图片
+					mov esi, OFFSET compressFileName
+					push esi
+					mov	esi, OFFSET szFileName
+					push esi
+					CALL compressFunc
+					pop esi
+					pop esi
 				.ENDIF
 
 			.ENDIF
@@ -740,6 +755,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				
 				; 清空缓存
 				INVOKE	DeleteTmpImage
+				INVOKE	DeleteCompressImage
 				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
@@ -763,6 +779,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 0
 				mov isFiltered, eax
+				mov eax, 2
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -785,6 +803,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -807,6 +826,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -829,6 +849,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -851,6 +872,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -873,6 +895,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -895,6 +918,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -917,6 +941,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -939,6 +964,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -961,6 +987,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -983,6 +1010,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
 
@@ -1005,8 +1033,31 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				; 切换状态
 				mov eax, 1
 				mov isFiltered, eax
+				mov filterBtnClicked, eax
 
 			.ENDIF
+
+			mov eax, filterBtnClicked
+			.IF eax == 1
+				; 压缩图片
+				mov esi, OFFSET compressFileName
+				push esi
+				mov	esi, OFFSET tmpFileName
+				push esi
+				CALL compressFunc
+				pop esi
+				pop esi
+			.ELSEIF eax == 2
+				mov esi, OFFSET compressFileName
+				push esi
+				mov	esi, OFFSET szFileName
+				push esi
+				CALL compressFunc
+				pop esi
+				pop esi
+			.ENDIF
+			mov eax, 0
+			mov filterBtnClicked, eax
 
 		.ELSEIF interfaceID == 2
 
@@ -1281,40 +1332,7 @@ SaveImg	PROC	USES esi edi ecx
 		; INVOKE GetModuleFileName, hInstance, addr currentWorkDir, 256
 		; INVOKE MessageBoxA, NULL, addr currentWorkDir, addr szTitle, NULL
 		; 拼接字符串 tmp_Image为临时文件的绝对路径
-		mov esi, OFFSET szFileName
-		mov edi, OFFSET tmp_Image
-		mov eax, [esi]
-		L1:
-			mov ebx, [esi]
-			mov [edi], ebx
-			add esi, 1
-			add edi, 1
-			mov eax, [esi]
-			cmp eax, 0
-			jne L1
-		sub edi, 1
-		mov eax, [edi]
-
-		L2:
-			mov eax, 0
-			mov [edi], eax
-			sub edi, 1
-			mov eax, [edi]
-			cmp eax, '\'
-			jne L2
-		add edi, 1
-
-		mov esi, OFFSET tmpFileName
-		mov eax, [esi]
-		L3:
-			mov ebx, [esi]
-			mov [edi], ebx
-			add esi, 1
-			add edi, 1
-			mov eax, [esi]
-			cmp eax, 0
-			jne L3
-		; INVOKE MessageBoxA, NULL, addr tmp_Image, addr szTitle, NULL
+		INVOKE	Regular2Absolute, addr szFileName, addr tmpFileName, addr tmp_Image
 
 		mov esi, OFFSET saveFileName
 		push esi
@@ -1329,48 +1347,64 @@ SaveImg	PROC	USES esi edi ecx
 SaveImg ENDP
 
 ;-----------------------------------------------------
-DeleteTmpImage	PROC	USES esi edi ecx
+DeleteTmpImage	PROC
 ; 删除滤镜过程中出现的临时图
 ;-----------------------------------------------------
-	mov esi, OFFSET szFileName
-	mov edi, OFFSET tmp_Image
-	mov eax, [esi]
-	L1:
-		mov ebx, [esi]
-		mov [edi], ebx
-		add esi, 1
-		add edi, 1
-		mov eax, [esi]
-		cmp eax, 0
-		jne L1
-	sub edi, 1
-	mov eax, [edi]
-
-	L2:
-		mov eax, 0
-		mov [edi], eax
-		sub edi, 1
-		mov eax, [edi]
-		cmp eax, '\'
-		jne L2
-	add edi, 1
-
-	mov esi, OFFSET tmpFileName
-	mov eax, [esi]
-	L3:
-		mov ebx, [esi]
-		mov [edi], ebx
-		add esi, 1
-		add edi, 1
-		mov eax, [esi]
-		cmp eax, 0
-		jne L3
-	
-	;INVOKE MessageBoxA, NULL, addr tmpFileName, addr szTitle, NULL
-	;INVOKE MessageBoxA, NULL, addr tmp_Image, addr szTitle, NULL
+	INVOKE	Regular2Absolute, addr szFileName, addr tmpFileName, addr tmp_Image
 	INVOKE DeleteFile, addr tmp_Image
 	ret
 DeleteTmpImage ENDP
+
+;-----------------------------------------------------
+DeleteCompressImage	PROC
+; 删除压缩图片
+;-----------------------------------------------------
+	INVOKE	Regular2Absolute, addr szFileName, addr compressFileName, addr absoluteCompressFileName
+	
+	INVOKE DeleteFile, addr absoluteCompressFileName
+	ret
+DeleteCompressImage ENDP
+
+;-----------------------------------------------------
+Regular2Absolute	PROC	USES esi edi ecx	absolute:DWORD, regular:DWORD, dst:DWORD
+; 参数：原绝对路径（含文件名）、相对路径文件名、绝对路径保存的位置
+; 转化成同级文件夹的绝对路径
+;-----------------------------------------------------
+	mov esi, absolute
+	mov edi, dst
+	mov al, [esi]
+	L1:
+		mov bl, [esi]
+		mov [edi], bl
+		add esi, 1
+		add edi, 1
+		mov al, [esi]
+		cmp al, 0
+		jne L1
+	sub edi, 1
+	mov al, [edi]
+
+	L2:
+		mov al, 0
+		mov [edi], al
+		sub edi, 1
+		mov al, [edi]
+		cmp al, '\'
+		jne L2
+	add edi, 1
+
+	mov esi, regular
+	mov al, [esi]
+	L3:
+		mov bl, [esi]
+		mov [edi], bl
+		add esi, 1
+		add edi, 1
+		mov al, [esi]
+		cmp al, 0
+		jne L3
+	ret
+Regular2Absolute	ENDP
 
 ;-----------------------------------------------------
 RandStr	PROC
