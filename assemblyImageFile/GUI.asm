@@ -66,6 +66,7 @@ PUBLIC	ofn
 	yuhua2Status			DWORD 0
 	mopi1Status				DWORD 0
 	mopi2Status				DWORD 0
+	filterBtnClicked		DWORD 0
 
 	szClassName		BYTE "MASMPlus_Class",0
 	WindowName		BYTE "IMAGE", 0
