@@ -329,19 +329,26 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		
 			; 检测当前是否加过滤镜
 			.IF isFiltered == 0
-				INVOKE	LoadImageFromFile, OFFSET szFileName, ADDR szImage
-				INVOKE	GdipGetImageWidth, szImage, OFFSET szWidth
-				INVOKE	GdipGetImageHeight, szImage, OFFSET szHeight
+				;INVOKE	GdipGetImageWidth, szImage, OFFSET szWidth
+				;INVOKE	GdipGetImageHeight, szImage, OFFSET szHeight
 				mov esi, OFFSET compressFileName
 				push esi
 				mov	esi, OFFSET szFileName
-				push	esi
+				push esi
 				CALL compressFunc
 				pop esi
 				pop esi
+				INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR szImage
 				INVOKE	GdipDrawImagePointRectI, graphics, szImage, 0, 0, 0, 0, 1024, 768, 2
 			.ELSE
-				INVOKE	LoadImageFromFile, OFFSET tmpFileName, ADDR tmpImage
+				mov esi, OFFSET compressFileName
+				push esi
+				mov	esi, OFFSET tmpFileName
+				push esi
+				CALL compressFunc
+				pop esi
+				pop esi
+				INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR tmpImage
 				INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 0, 0, 0, 0, 1024, 768, 2
 			.ENDIF
 
@@ -566,6 +573,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		; 释放内存
 		INVOKE	GdipDeleteGraphics, graphics
 		INVOKE	GdipDisposeImage, tmpImage
+		INVOKE	GdipDisposeImage, szImage
 		INVOKE	DeleteObject, pbitmap
 		INVOKE  DeleteDC, hMemDC
 		INVOKE  EndPaint, hWnd, ADDR ps

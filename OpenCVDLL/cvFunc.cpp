@@ -926,8 +926,7 @@ int resize_uniform(Mat &src, Mat &dst, Size dst_size, object_rect &effect_area)
 	int h = src.rows;
 	int dst_w = dst_size.width;
 	int dst_h = dst_size.height;
-	std::cout << "src: (" << h << ", " << w << ")" << std::endl;
-	dst = Mat(Size(dst_w, dst_h), CV_8UC3, Scalar(0));
+	dst = Mat(Size(dst_w, dst_h), CV_8UC3, Scalar(255,255,255));
 
 	float ratio_src = w*1.0 / h;
 	float ratio_dst = dst_w*1.0 / dst_h;
@@ -959,18 +958,14 @@ int resize_uniform(Mat &src, Mat &dst, Size dst_size, object_rect &effect_area)
 			}
 			effect_area.x = index_w;
 			effect_area.y = 0;
-			effect_area.width = tmp_w;
-			effect_area.height = tmp_h;
 	} else if (tmp_h != dst_h) { //宽对齐， 高没有对齐
 			int index_h = floor((dst_h - tmp_h) / 2.0);
-			std::cout << "index_h: " << index_h << std::endl;
 			memcpy(dst.data+index_h*dst_w*3, tmp.data, tmp_w*tmp_h*3);
 			effect_area.x = 0;
 			effect_area.y = index_h;
-			effect_area.width = tmp_w;
-			effect_area.height = tmp_h;
-	} else {
 	}
+	effect_area.width = tmp_w;
+	effect_area.height = tmp_h;
 	return 0;
 }
 
