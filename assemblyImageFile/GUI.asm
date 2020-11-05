@@ -611,9 +611,9 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; 绘图
 			
 		; 释放内存
-		INVOKE	GdipDeleteGraphics, graphics
-		INVOKE	GdipDisposeImage, tmpImage
 		INVOKE	GdipDisposeImage, szImage
+		INVOKE	GdipDisposeImage, tmpImage
+		INVOKE	GdipDeleteGraphics, graphics
 		INVOKE	DeleteObject, pbitmap
 		INVOKE	DeleteDC, hMemDC
 		INVOKE	EndPaint, hWnd, ADDR ps
@@ -746,14 +746,24 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, menghuan1Location, OFFSET menghuan1Status, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhua1Location, OFFSET yuhua1Status, 2
 			INVOKE	ChangeBtnStatus, eax, ebx, mopi1Location, OFFSET mopi1Status, 2
+			
+			; 鼠标位于save
+			mov eax, saveStatus
+			.IF eax == 2
+				; todo
+				INVOKE SaveImg
+				xor eax, eax
+				ret
+			.ENDIF
+
+			; 清空缓存
+			INVOKE	DeleteTmpImage
+			INVOKE	RandStr
+			INVOKE	DeleteCompressImage
 
 			; 鼠标位于back
 			mov eax, backStatus
 			.IF eax == 2
-				
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	DeleteCompressImage
 				; 切换界面状态
 				mov edx, 0
 				mov interfaceID, edx
@@ -761,13 +771,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				mov eax, 0
 				mov isFiltered, eax
 
-			.ENDIF
-
-			; 鼠标位于save
-			mov eax, saveStatus
-			.IF eax == 2
-				; todo
-				INVOKE SaveImg
 			.ENDIF
 
 			; 鼠标位于yuantu
@@ -785,10 +788,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于sumiao
 			mov eax, sumiao1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用素描滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -808,10 +807,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于fudiao
 			mov eax, fudiao1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用浮雕滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -831,10 +826,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于maoboli
 			mov eax, maoboli1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用毛玻璃滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -854,10 +845,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于huaijiu
 			mov eax, huaijiu1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用怀旧滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -877,10 +864,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于huidu
 			mov eax, huidu1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用灰度滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -900,10 +883,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于hedu
 			mov eax, hedu1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用褐度滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -923,10 +902,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于danya
 			mov eax, danya1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用淡雅滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -946,10 +921,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于gete
 			mov eax, gete1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用哥特滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -969,10 +940,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于menghuan
 			mov eax, menghuan1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用梦幻滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -992,10 +959,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于yuhua
 			mov eax, yuhua1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用羽化滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -1015,10 +978,6 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于mopi
 			mov eax, mopi1Status
 			.IF eax == 2
-
-				; 清空缓存
-				INVOKE	DeleteTmpImage
-				INVOKE	RandStr
 				
 				; 调用磨皮滤镜函数
 				mov ebx, OFFSET tmpFileName
@@ -1347,7 +1306,7 @@ DeleteTmpImage	PROC
 ; 删除滤镜过程中出现的临时图
 ;-----------------------------------------------------
 	INVOKE	Regular2Absolute, addr szFileName, addr tmpFileName, addr tmp_Image
-	INVOKE DeleteFile, addr tmp_Image
+	INVOKE	DeleteFile, addr tmp_Image
 	ret
 DeleteTmpImage ENDP
 
@@ -1357,7 +1316,7 @@ DeleteCompressImage	PROC
 ;-----------------------------------------------------
 	INVOKE	Regular2Absolute, addr szFileName, addr compressFileName, addr absoluteCompressFileName
 	
-	INVOKE DeleteFile, addr absoluteCompressFileName
+	INVOKE	DeleteFile, addr absoluteCompressFileName
 	ret
 DeleteCompressImage ENDP
 
