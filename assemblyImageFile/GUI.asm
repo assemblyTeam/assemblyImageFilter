@@ -606,6 +606,25 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				INVOKE	GdipDrawImagePointRectI, graphics, mopi2Btn, mopi2Location.x, mopi2Location.y, 0, 0, mopi2Location.w, mopi2Location.h, 2
 			.ENDIF
 
+		.ELSEIF interfaceID == 3
+
+			; 绘制背景图
+			INVOKE	GdipDrawImagePointRectI, graphics, background2, 0, 0, 0, 0, 1024, 768, 2
+			INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR tmpImage
+			INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 55, 80, 0, 0, 800, 600, 2
+
+			; 绘制按钮
+			.IF backStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, backBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ELSEIF backStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, backHoverBtn, backLocation.x, backLocation.y, 0, 0, backLocation.w, backLocation.h, 2
+			.ENDIF
+			.IF saveStatus == 0
+				INVOKE	GdipDrawImagePointRectI, graphics, saveBtn, saveLocation.x, saveLocation.y, 0, 0, saveLocation.w, saveLocation.h, 2
+			.ELSEIF saveStatus == 1
+				INVOKE	GdipDrawImagePointRectI, graphics, saveHoverBtn, saveLocation.x, saveLocation.y, 0, 0, saveLocation.w, saveLocation.h, 2
+			.ENDIF
+
 		.ENDIF
 
 		INVOKE  BitBlt, hdc, 0, 0, 1024, 768, hMemDC, 0, 0, SRCCOPY		; 绘图
@@ -668,6 +687,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			INVOKE	ChangeBtnStatus, eax, ebx, menghuan2Location, OFFSET menghuan2Status, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, yuhua2Location, OFFSET yuhua2Status, 1
 			INVOKE	ChangeBtnStatus, eax, ebx, mopi2Location, OFFSET mopi2Status, 1
+
+		.ELSEIF interfaceID == 3
+
+			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 1
+			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 1		
 
 		.ENDIF
 
@@ -1049,8 +1073,35 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			; 鼠标位于save
 			mov eax, saveStatus
 			.IF eax == 2
-				; todo
-				INVOKE SaveImg
+				
+				INVOKE	RandStr
+
+				; 捕获一帧并保存
+				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
+				call	releaseFunc
+				mov ebx, cameraFilterType
+				push ebx
+				mov edx, OFFSET tmpFileName
+				push edx
+				call	frameFunc
+				pop eax
+				pop eax
+				call	releaseFunc
+
+				; 压缩图片
+				mov esi, OFFSET compressFileName
+				push esi
+				mov	esi, OFFSET tmpFileName
+				push esi
+				CALL compressFunc
+				pop esi
+				pop esi
+
+				mov eax, 3
+				mov interfaceID, eax
+
+				xor eax, eax
+				ret
 			.ENDIF
 
 			; 鼠标位于yuantu
@@ -1206,6 +1257,35 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				mov cameraFilterType, ebx
 				INVOKE  CreateThread, NULL, 0, OFFSET cameraThread, NULL, 0, OFFSET cameraThreadID
 				mov		hThread, eax	; 获取进程句柄
+
+			.ENDIF
+
+		.ELSEIF interfaceID == 3
+
+			; 改变按钮状态
+			INVOKE	ChangeBtnStatus, eax, ebx, backLocation, OFFSET backStatus, 2
+			INVOKE	ChangeBtnStatus, eax, ebx, saveLocation, OFFSET saveStatus, 2
+
+			; 鼠标位于save
+			mov eax, saveStatus
+			.IF eax == 2
+				; todo
+				INVOKE SaveImg
+				xor eax, eax
+				ret
+			.ENDIF
+
+			; 鼠标位于back
+			mov eax, backStatus
+			.IF eax == 2
+
+				; 切换界面状态
+				mov edx, 0
+				mov interfaceID, edx
+				; 清空缓存
+				INVOKE	DeleteTmpImage
+				INVOKE	RandStr
+				INVOKE	DeleteCompressImage
 
 			.ENDIF
 
