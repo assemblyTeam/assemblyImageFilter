@@ -244,6 +244,8 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 		; 打开计时器
 		INVOKE	SetTimer, hWnd, 1, 10, NULL
+		; 获得当前exe绝对路径
+		INVOKE	GetModuleFileName, hInstance, addr currentWorkDir, 256
 		
 		INVOKE	LoadLibrary, OFFSET OpenCVDLL
 		mov		OpenCV, eax				; 加载DLL
@@ -610,7 +612,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 
 			; 绘制背景图
 			INVOKE	GdipDrawImagePointRectI, graphics, background2, 0, 0, 0, 0, 1024, 768, 2
-			INVOKE	LoadImageFromFile, OFFSET compressFileName, ADDR tmpImage
+			INVOKE	LoadImageFromFile, OFFSET absoluteCompressFileName, ADDR tmpImage
 			INVOKE	GdipDrawImagePointRectI, graphics, tmpImage, 55, 80, 0, 0, 800, 600, 2
 
 			; 绘制按钮
@@ -1097,6 +1099,7 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				pop esi
 				pop esi
 
+				INVOKE	Regular2Absolute, addr currentWorkDir, addr compressFileName, addr absoluteCompressFileName
 				mov eax, 3
 				mov interfaceID, eax
 
@@ -1270,7 +1273,27 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			mov eax, saveStatus
 			.IF eax == 2
 				; todo
-				INVOKE SaveImg
+				INVOKE	RtlZeroMemory, addr save_ofn, sizeof save_ofn
+				mov save_ofn.lStructSize, sizeof save_ofn		;结构的大小
+				mov save_ofn.lpstrFilter, OFFSET szFilterString	;文件过滤器
+				mov save_ofn.lpstrInitialDir, OFFSET szInitialDir ; 初始目录
+				mov save_ofn.lpstrFile, OFFSET saveFileName	;文件名的存放位置
+				mov save_ofn.nMaxFile, 256	;文件名的最大长度
+				mov	save_ofn.Flags, OFN_PATHMUSTEXIST
+				INVOKE	GetSaveFileName, addr save_ofn
+				.IF eax != 0			;若选择了文件
+					; 拼接字符串 tmp_Image为临时文件的绝对路径
+					INVOKE	Regular2Absolute, addr currentWorkDir, addr tmpFileName, addr tmp_Image
+					mov esi, OFFSET saveFileName
+					push esi
+					mov esi, OFFSET tmp_Image
+					push esi
+					CALL	saveImageFunc
+					pop esi
+					pop esi
+					INVOKE DeleteFile, addr tmp_Image
+				.ENDIF
+
 				xor eax, eax
 				ret
 			.ENDIF
@@ -1283,9 +1306,11 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 				mov edx, 0
 				mov interfaceID, edx
 				; 清空缓存
-				INVOKE	DeleteTmpImage
+				INVOKE	Regular2Absolute, addr currentWorkDir, addr tmpFileName, addr tmp_Image
+				INVOKE	DeleteFile, addr tmp_Image
+				
 				INVOKE	RandStr
-				INVOKE	DeleteCompressImage
+				INVOKE	DeleteFile, addr absoluteCompressFileName
 
 			.ENDIF
 
