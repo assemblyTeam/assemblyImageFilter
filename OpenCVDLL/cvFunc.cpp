@@ -889,22 +889,67 @@ void openCamera(int filterType)
 	}
 }
 
+void captureFrame(char* outputPath, int filterType)
+{
+	VideoCapture capture(0);
+
+	Mat frame;
+	capture >> frame;
+	if (filterType == 0)
+	{
+		imwrite(outputPath, frame);
+	}
+	else if (filterType == 1)
+	{
+		imwrite(outputPath, sumiaoImage(frame));
+	}
+	else if (filterType == 2)
+	{
+		imwrite(outputPath, fudiaoImage(frame));
+	}
+	else if (filterType == 3)
+	{
+		imwrite(outputPath, maoboliImage(frame));
+	}
+	else if (filterType == 4)
+	{
+		imwrite(outputPath, huaijiuImage(frame));
+	}
+	else if (filterType == 5)
+	{
+		imwrite(outputPath, huiduImage(frame));
+	}
+	else if (filterType == 6)
+	{
+		imwrite(outputPath, heduImage(frame));
+	}
+	else if (filterType == 7)
+	{
+		imwrite(outputPath, danyaImage(frame));
+	}
+	else if (filterType == 8)
+	{
+		imwrite(outputPath, geteImage(frame));
+	}
+	else if (filterType == 9)
+	{
+		imwrite(outputPath, menghuanImage(frame));
+	}
+	else if (filterType == 10)
+	{
+		imwrite(outputPath, yuhuaImage(frame));
+	}
+	else if (filterType == 11)
+	{
+		imwrite(outputPath, mopiImage(frame));
+	}
+}
+
 void releaseCamera()
 {
 	VideoCapture capture(0);
 	capture.release();
 	destroyAllWindows();
-}
-
-void captureFrame(int filterType)
-{
-	VideoCapture capture(0);
-	Mat frame;
-	capture >> frame;
-	if (filterType == 0)
-	{
-		imwrite("images/tmp.png", frame);
-	}
 }
 
 void saveImage(char* inputPath, char* outputPath)
