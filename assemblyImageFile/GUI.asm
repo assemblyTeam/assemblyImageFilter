@@ -1077,29 +1077,29 @@ WndProc PROC hWnd:DWORD, uMsg:DWORD, wParam :DWORD, lParam :DWORD
 			.IF eax == 2
 				
 				INVOKE	RandStr
-
+				INVOKE	Regular2Absolute, addr currentWorkDir, addr tmpFileName, addr tmp_Image
 				; 捕获一帧并保存
 				INVOKE  TerminateThread, hThread, OFFSET cameraThreadID
 				call	releaseFunc
 				mov ebx, cameraFilterType
 				push ebx
-				mov edx, OFFSET tmpFileName
+				mov edx, OFFSET tmp_Image
 				push edx
 				call	frameFunc
 				pop eax
 				pop eax
 				call	releaseFunc
 
+				INVOKE	Regular2Absolute, addr currentWorkDir, addr compressFileName, addr absoluteCompressFileName
 				; 压缩图片
-				mov esi, OFFSET compressFileName
+				mov esi, OFFSET absoluteCompressFileName
 				push esi
-				mov	esi, OFFSET tmpFileName
+				mov	esi, OFFSET tmp_Image
 				push esi
 				CALL compressFunc
 				pop esi
 				pop esi
 
-				INVOKE	Regular2Absolute, addr currentWorkDir, addr compressFileName, addr absoluteCompressFileName
 				mov eax, 3
 				mov interfaceID, eax
 
